@@ -55,7 +55,5 @@ class Banker(commands.Cog):
         await owner.send(embed=responce_pm)
         await inter.send(responce_inter,ephemeral=True)
 
-
-
 def setup(client):
     client.add_cog(Banker(client))
