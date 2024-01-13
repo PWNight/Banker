@@ -7,6 +7,12 @@ connection = pymysql.connect(
   database='s79998_foxecosystem',
   cursorclass=pymysql.cursors.DictCursor
 )    
+def get_info_by_id(id):
+    global connection
+    with connection.cursor() as cursor:
+      cursor.execute(f"SELECT * FROM `bank_cards` WHERE id = {id}")
+      result = cursor.fetchall()
+      return result
 def send(result):
     global connection
     cursor = connection.cursor()
