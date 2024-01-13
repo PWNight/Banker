@@ -1,0 +1,20 @@
+{
+    "sqltools.connections": [
+        {
+            "mysqlOptions": {
+                "authProtocol": "xprotocol",
+                "enableSsl": "Disabled",
+                "ssl": {}
+            },
+            "previewLimit": 50,
+            "server": "mysql3.joinserver.xyz",
+            "port": 3306,
+            "driver": "MySQL",
+            "database": "s79998_foxecosystem",
+            "name": "EcoSystem_BD",
+            "username": "u79998_28B2CZ61g1",
+            "password": "J9^E5=d^Xl.dyO@Fy4@LYi1f",
+            "connectionTimeout": 30
+        }
+    ]
+}
