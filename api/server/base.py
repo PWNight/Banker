@@ -13,6 +13,12 @@ def get_info_by_id(id):
       cursor.execute(f"SELECT * FROM `bank_cards` WHERE id = {id}")
       result = cursor.fetchall()
       return result
+def get_info_by_ownerid(id):
+    global connection
+    with connection.cursor() as cursor:
+      cursor.execute(f"SELECT * FROM `bank_cards` WHERE owner_id = {id}")
+      result = cursor.fetchall()
+      return result
 def send(result):
     global connection
     cursor = connection.cursor()
