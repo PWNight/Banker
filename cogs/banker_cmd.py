@@ -6,10 +6,11 @@ from disnake.ext import commands
 import random
 from api.server import base, main
 
-class Banker(commands.Cog):
+class BankerCMD(commands.Cog):
     def __init__(self, client):
         self.client = client
     @commands.slash_command(name="создать-счёт", description="💳 Создаёт счёт на указанного игрока", test_guilds=[921483461016031263])
+    @commands.has_role(1197579125037207572)
     @commands.cooldown(1, 15, commands.BucketType.user)
     async def create_card(self, inter, member: discord.Member):
         logchannel = self.client.get_channel(1195653007703023727)
@@ -57,6 +58,7 @@ class Banker(commands.Cog):
         return
 
     @commands.slash_command(name="снять-ары", description="💸 Снимает ары с указанного счёта", test_guilds=[921483461016031263])
+    @commands.has_role(1197579125037207572)
     @commands.cooldown(1, 15, commands.BucketType.user)
     async def take_money(self, inter, card_id: int, sum: int):
         card_info = base.get_info_by_id(card_id)
@@ -103,6 +105,7 @@ class Banker(commands.Cog):
             return
         
     @commands.slash_command(name="пополнить-счёт", description="💸 Пополняет счёт игрока", test_guilds=[921483461016031263])
+    @commands.has_role(1197579125037207572)
     @commands.cooldown(1, 15, commands.BucketType.user)
     async def give_money(self, inter, card_id: int, sum: int):
         card_info = base.get_info_by_id(card_id)
@@ -149,4 +152,4 @@ class Banker(commands.Cog):
             return
 
 def setup(client):
-    client.add_cog(Banker(client))
+    client.add_cog(BankerCMD(client))

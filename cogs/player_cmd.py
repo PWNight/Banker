@@ -6,7 +6,7 @@ from disnake.ext import commands
 import random
 from api.server import base, main
 
-class Player(commands.Cog):
+class PlayerCMD(commands.Cog):
     def __init__(self, client):
         self.client = client
     @commands.slash_command(name="перевести-ары", description="💵 Переводит АРы на указанный счёт", test_guilds=[921483461016031263])
@@ -104,7 +104,6 @@ class Player(commands.Cog):
             return
         else:
             pass
-        #if fine_id == None:
         fines_info = base.get_fines_by_userid(inter.author.id)
         if fines_info == ():
             await inter.send(f'<:minecraft_deny:1080779495386140684> У вас нету штрафов.',ephemeral=True)
@@ -112,17 +111,6 @@ class Player(commands.Cog):
         else:
             for fine_info in fines_info:
                 await pay(fine_info)
-        #else:
-        #    fine_info = base.get_fine_by_id(fine_id)
-        #    if fine_info == ():
-        #        await inter.send(f'<:minecraft_deny:1080779495386140684> Штраф с ID `{fine_id}` не найден. Убедитесь, что ID написан без опечаток и скопирована только часть после `f_`.',ephemeral=True)
-        #        return
-        #    if fine_info[0]['fined_id'] != inter.author.id:
-        #        await inter.send(f'<:minecraft_deny:1080779495386140684> Это не ваш штраф.',ephemeral=True)
-        #        return
-        #    else:
-        #        pass
-
-
+                
 def setup(client):
-    client.add_cog(Player(client))
+    client.add_cog(PlayerCMD(client))
