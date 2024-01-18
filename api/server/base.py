@@ -22,7 +22,7 @@ def get_info_by_ownerid(id):
 def get_fines_by_userid(id):
     global connection
     with connection.cursor() as cursor:
-      cursor.execute(f"SELECT * FROM `fines` WHERE fined_id = '{id}' AND status != 'Оплачен'")
+      cursor.execute(f"SELECT * FROM `fines` WHERE fined_id = {id} AND status != 'Оплачен'")
       result = cursor.fetchall()
       return result 
 def get_fine_by_id(id):
