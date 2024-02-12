@@ -150,6 +150,20 @@ class BankerCMD(commands.Cog):
             await owner.send(embed=responce_pm)
             await inter.send(responce_inter,ephemeral=True)
             return
+    @commands.slash_command(name="баланс-игрока", description="💰 Отображает баланс карты игрока", test_guilds=[921483461016031263])
+    @commands.cooldown(1, 10, commands.BucketType.user)
+    async def give_money(self, inter, member: discord.Member):
+        owner_card_info = base.get_info_by_ownerid(member.id)
+        if owner_card_info == ():
+            await inter.send(f'<:minecraft_deny:1080779495386140684> Игрок не обладает никакими картами.',ephemeral=True)
+            return
+        else:
+            owner_card_id = owner_card_info[0]['id']
+            owner_balance = owner_card_info[0]['balance']
+            responce_inter = f'<:minecraft_accept:1080779491875491882> 💰 Баланс игрока {member.mention} (`FW-{owner_card_id}`) - `{owner_balance}` АРов.'
+
+            await inter.send(responce_inter,ephemeral=True)
+            return
 
 def setup(client):
     client.add_cog(BankerCMD(client))
