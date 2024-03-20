@@ -7,12 +7,6 @@ connection = pymysql.connect(
   database='s79998_foxecosystem',
   cursorclass=pymysql.cursors.DictCursor
 )   
-def send(result):
-  global connection
-  cursor = connection.cursor()
-  cursor.execute(result)
-  connection.commit() 
-  return result
 def request_one(result):
   global connection
   cursor = connection.cursor()
