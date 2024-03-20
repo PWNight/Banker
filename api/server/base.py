@@ -6,31 +6,25 @@ connection = pymysql.connect(
   password='J9^E5=d^Xl.dyO@Fy4@LYi1f',
   database='s79998_foxecosystem',
   cursorclass=pymysql.cursors.DictCursor
-)    
-def get_info_by_id(id):
-    global connection
-    with connection.cursor() as cursor:
-      cursor.execute(f"SELECT * FROM `bank_cards` WHERE id = {id}")
-      result = cursor.fetchall()
-      return result
-def get_info_by_ownerid(id):
-    global connection
-    with connection.cursor() as cursor:
-      cursor.execute(f"SELECT * FROM `bank_cards` WHERE owner_id = {id}")
-      result = cursor.fetchall()
-      return result
-def get_fines_by_userid(id):
-    global connection
-    with connection.cursor() as cursor:
-      cursor.execute(f"SELECT * FROM `fines` WHERE fined_id = {id} AND status != 'Оплачен'")
-      result = cursor.fetchall()
-      return result 
-def get_fine_by_id(id):
-    global connection
-    with connection.cursor() as cursor:
-      cursor.execute(f"SELECT * FROM `fines` WHERE id = '{id}' AND status != 'Оплачен'")
-      result = cursor.fetchall()
-      return result 
+)   
+def send(result):
+  global connection
+  cursor = connection.cursor()
+  cursor.execute(result)
+  connection.commit() 
+  return result
+def request_one(result):
+  global connection
+  cursor = connection.cursor()
+  cursor.execute(result)
+  result = cursor.fetchone()
+  return result
+def request_all(result):
+  global connection
+  cursor = connection.cursor()
+  cursor.execute(result)
+  result = cursor.fetchall()
+  return result 
 def send(result):
     global connection
     cursor = connection.cursor()

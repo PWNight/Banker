@@ -12,7 +12,7 @@ class BankerCMD(commands.Cog):
     @commands.has_role(1197579125037207572)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def create_card(self, inter, member: discord.Member):
-        card_info = base.get_info_by_ownerid(member.id)
+        card_info = base.request_one(f"SELECT * FROM `bank_cards` WHERE owner_id = {inter.author.id}")
         if card_info != ():
             await inter.send(f'<:minecraft_deny:1080779495386140684> У игрока уже есть зарегистрированная карта (`FW-{card_info[0]["id"]}`))')
             return
@@ -66,7 +66,7 @@ class BankerCMD(commands.Cog):
     @commands.has_role(1197579125037207572)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def take_money(self, inter, card_id: int, sum: int):
-        card_info = base.get_info_by_id(card_id)
+        card_info = base.request_one(f"SELECT * FROM `bank_cards` WHERE id = {card_id}")
         if card_info == ():
             await inter.send(f'<:minecraft_deny:1080779495386140684> Карта `FW-{card_id}` не найдена. Убедитесь, что вы ввели правильный номер.',ephemeral=True)
             return
@@ -112,7 +112,7 @@ class BankerCMD(commands.Cog):
     @commands.has_role(1197579125037207572)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def give_money(self, inter, card_id: int, sum: int):
-        card_info = base.get_info_by_id(card_id)
+        card_info = base.request_one(f"SELECT * FROM `bank_cards` WHERE id = {card_id}")
         if card_info == ():
             await inter.send(f'<:minecraft_deny:1080779495386140684> Карта `FW-{card_id}` не найдена. Убедитесь, что вы ввели правильный номер.',ephemeral=True)
             return
@@ -153,7 +153,7 @@ class BankerCMD(commands.Cog):
     @commands.slash_command(name="баланс-игрока", description="💰 Отображает баланс карты игрока", test_guilds=[921483461016031263])
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def give_money(self, inter, member: discord.Member):
-        owner_card_info = base.get_info_by_ownerid(member.id)
+        owner_card_info = base.request_one(f"SELECT * FROM `bank_cards` WHERE owner_id = {inter.author.id}")
         if owner_card_info == ():
             await inter.send(f'<:minecraft_deny:1080779495386140684> Игрок не обладает никакими картами.',ephemeral=True)
             return
