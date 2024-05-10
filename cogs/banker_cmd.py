@@ -124,7 +124,7 @@ class BankerCMD(commands.Cog):
     @commands.slash_command(name="пополнить-карту", description="💸 Пополняет карту игрока", test_guilds=[921483461016031263])
     @commands.has_role(1197579125037207572)
     @commands.cooldown(1, 10, commands.BucketType.user)
-    async def give_money(self, inter, card_id: int, sum: int):
+    async def grant_money(self, inter, card_id: int, sum: int):
         #gen card info by card id
         card_info = base.request_one(f"SELECT * FROM `bank_cards` WHERE id = {card_id}")
         if card_info == ():
@@ -167,20 +167,6 @@ class BankerCMD(commands.Cog):
 
         #update card balance in DB
         base.send(f'''UPDATE `bank_cards` SET `balance`= {balance} WHERE id = {card_id}''')
-        return
-    @commands.slash_command(name="баланс-игрока", description="💰 Отображает баланс карты игрока", test_guilds=[921483461016031263])
-    @commands.cooldown(1, 10, commands.BucketType.user)
-    async def get_balance(self, inter, member: discord.Member):
-        #get card info by member id
-        card_info = base.request_one(f"SELECT * FROM `bank_cards` WHERE owner_id = {member.id}")
-        if card_info == ():
-            await inter.send(f'<:minecraft_deny:1080779495386140684> Игрок не обладает никакими картами.',ephemeral=True)
-            return
-        card_id = card_info['id']
-        balance = card_info['balance']
-        responce_inter = f'<:minecraft_accept:1080779491875491882> 💰 Баланс игрока {member.mention} (`FW-{card_id}`) - `{balance}` АРов.'
-
-        await inter.send(responce_inter,ephemeral=True)
         return
 
 def setup(client):
