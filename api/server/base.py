@@ -1,27 +1,31 @@
 import pymysql
-connection = pymysql.connect(
+def conn():
+  connection = pymysql.connect(
   host='mysql3.joinserver.xyz',
   port=3306,
   user='u79998_28B2CZ61g1',
   password='J9^E5=d^Xl.dyO@Fy4@LYi1f',
-  database='s79998_foxecosystem',
+  database= 's79998_foxecosystem',
   cursorclass=pymysql.cursors.DictCursor
-)   
+)
+  return connection
+def send(result):
+  connection = conn()
+  cursor = connection.cursor()
+  cursor.execute(result)
+  connection.commit() 
+  connection.close()
 def request_one(result):
-  global connection
+  connection = conn()
   cursor = connection.cursor()
   cursor.execute(result)
   result = cursor.fetchone()
+  connection.close()
   return result
 def request_all(result):
-  global connection
+  connection = conn()
   cursor = connection.cursor()
   cursor.execute(result)
   result = cursor.fetchall()
-  return result 
-def send(result):
-    global connection
-    cursor = connection.cursor()
-    cursor.execute(result)
-    connection.commit()
-    return result
+  connection.close()
+  return result

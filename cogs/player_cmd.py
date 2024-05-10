@@ -13,7 +13,7 @@ class PlayerCMD(commands.Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def give_money(self, inter, card_id: int, sum: int):
         #get cards info by inter id and card id
-        owner_card_info = base.request_one(f"SELECT * FROM `bank_cards` WHERE owner_id = {inter.author.id}")
+        owner_card_info = base.request_one(f"SELECT * FROM `cards` WHERE owner_id = {inter.author.id}")
         reciever_card_info = base.get_info_by_id(card_id)
         if owner_card_info == ():
             await inter.send(f'<:minecraft_deny:1080779495386140684> Вы не обладаете никакими картами, обратитесь в отделение банка для оформления карты.',ephemeral=True)
@@ -42,6 +42,11 @@ class PlayerCMD(commands.Cog):
         owner_balance -= sum
         reciever_balance += sum
 
+        
+        #update balance in DB
+        base.send(f'''UPDATE `cards` SET `balance`= {owner_balance} WHERE id = {owner_card_id}''')
+        base.send(f'''UPDATE `cards` SET `balance`= {reciever_balance} WHERE id = {card_id}''')
+        
         #gen and send responce
         responce_inter = f'<:minecraft_accept:1080779491875491882> 💸 Вы перевели игроку {reciever.mention} (`FW-{card_id}`) {sum} АРов.'
         await inter.send(responce_inter,ephemeral=True)
@@ -62,10 +67,6 @@ class PlayerCMD(commands.Cog):
                                         \nЕсли АРы были переведены не вами, немедленно сообщите об этом команде проекта.''',color=0xEFAF6F)
         responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/856561382484475904/1195663985832366090/5526-icon-bank.png?ex=65b4cfdc&is=65a25adc&hm=58ceeeb52340e12b7bfd360db0dbdc048b0954800528f43c9bb7c3a4ab50ba4d&')
         await owner.send(embed=responce_pm)
-        
-        #update balance in DB
-        base.send(f'''UPDATE `bank_cards` SET `balance`= {owner_balance} WHERE id = {owner_card_id}''')
-        base.send(f'''UPDATE `bank_cards` SET `balance`= {reciever_balance} WHERE id = {card_id}''')
         return
         
     @commands.slash_command(name="оплатить-штрафы", description="💵 Оплачивает ваши штрафы", test_guilds=[921483461016031263])
@@ -73,7 +74,7 @@ class PlayerCMD(commands.Cog):
     async def pay_fine(self, inter):
         #get owner and this card info
         owner = inter.author
-        owner_card_info = base.request_one(f"SELECT * FROM `bank_cards` WHERE owner_id = {owner.id}")
+        owner_card_info = base.request_one(f"SELECT * FROM `cards` WHERE owner_id = {owner.id}")
         if owner_card_info == ():
             await inter.send(f'<:minecraft_deny:1080779495386140684> Вы не обладаете никакими картами, обратитесь в отделение банка для оформления карты.',ephemeral=True)
             return
@@ -87,7 +88,7 @@ class PlayerCMD(commands.Cog):
             for x in fines_info:
                 await pay(x)
         async def pay(fine_info):
-            owner_card_info = base.request_one(f"SELECT * FROM `bank_cards` WHERE owner_id = {owner.id}")
+            owner_card_info = base.request_one(f"SELECT * FROM `cards` WHERE owner_id = {owner.id}")
             notifychannel = self.client.get_channel(1111753012441006201)
             logchannel = self.client.get_channel(1195653007703023727)
             timezone_offset = +3.0
@@ -102,6 +103,11 @@ class PlayerCMD(commands.Cog):
                 await inter.send(f"<:minecraft_deny:1080779495386140684> На карте `FW-{owner_card_id}` недостаточно средств (Баланс: `{owner_balance}` АРов, а для оплаты нужно `{fine_info['size']}` АРов).",ephemeral=True)
                 return
             owner_balance -= fine_info['size']
+
+            #update balance in DB
+            base.send(f'''UPDATE `cards` SET `balance`= {owner_balance} WHERE id = {owner_card_id}''')
+            base.send(f'''UPDATE `cards` SET `balance`= {fine_info['size']} WHERE id = 1''')
+            base.send(f'''UPDATE `fines` SET `status`= 'Оплачен' WHERE id = '{fine_info['id']}' ''')
 
             #gen and send responce
             responce_inter = f"<:minecraft_accept:1080779491875491882> Штраф `{fine_info['id']}` успешно оплачен"
@@ -120,11 +126,7 @@ class PlayerCMD(commands.Cog):
                                            \nЕсли это был не ваш штраф, немедленно обратитесь в команду проекта.''',color=0xD0EF6F)
             responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/856561382484475904/1195663985832366090/5526-icon-bank.png?ex=65b4cfdc&is=65a25adc&hm=58ceeeb52340e12b7bfd360db0dbdc048b0954800528f43c9bb7c3a4ab50ba4d&')
             await owner.send(embed=responce_pm)
-
-            #update balance in DB
-            base.send(f'''UPDATE `bank_cards` SET `balance`= {owner_balance} WHERE id = {owner_card_id}''')
-            base.send(f'''UPDATE `bank_cards` SET `balance`= {fine_info['size']} WHERE id = 1''')
-            base.send(f'''UPDATE `fines` SET `status`= 'Оплачен' WHERE id = '{fine_info['id']}' ''')
+            return
 
     @commands.slash_command(name="баланс", description="Показывает баланс вашей карты или указанного игрока", test_guilds=[921483461016031263])
     @commands.cooldown(1, 5, commands.BucketType.user)
@@ -146,18 +148,10 @@ class PlayerCMD(commands.Cog):
             responce.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/emojis/1105878293187678208.webp?size=96&quality=lossless')
 
         #get card info by member id
-        card_info = base.request_all(f"SELECT * FROM `bank_cards` WHERE owner_id = {member.id}")
+        card_info = base.request_all(f"SELECT * FROM `cards` WHERE owner_id = {member.id}")
         if card_info == ():
-            if member != None:
-                if staff_role not in inter.author.roles:
-                    await inter.response.send_message('<:minecraft_deny:1080779495386140684> У вас нету банковской карты.',ephemeral=True)
-                    return
-                else:
-                    await inter.send(f'<:minecraft_deny:1080779495386140684> У игрока {member.mention} нету банковской карты.',ephemeral=True)
-                    return
-            if member == None:
-                await inter.send('<:minecraft_deny:1080779495386140684> У вас нету банковской карты.',ephemeral=True)
-                return
+            await inter.send(f'<:minecraft_deny:1080779495386140684> Не нашёл зарегистрированной карты на имя {member.mention}',ephemeral=True)
+            return
         else:
             for x in card_info:
                 card_id = x['id']
