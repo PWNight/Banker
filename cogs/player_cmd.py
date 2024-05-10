@@ -131,6 +131,7 @@ class PlayerCMD(commands.Cog):
     async def balance(self, inter, member: discord.Member = None):
         guild = self.client.get_guild(inter.guild.id) 
         staff_role = discord.utils.get(guild.roles,id=1035865016714412122)
+
         if member != None:
             if staff_role not in inter.author.roles:
                 member = inter.author
@@ -143,16 +144,20 @@ class PlayerCMD(commands.Cog):
             member = inter.author
             responce = discord.Embed(description=f'''### Информация по вашим картам:''',color=0xEFC06F)
             responce.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/emojis/1105878293187678208.webp?size=96&quality=lossless')
+
+        #get card info by member id
         card_info = base.request_all(f"SELECT * FROM `bank_cards` WHERE owner_id = {member.id}")
         if card_info == ():
             if member != None:
                 if staff_role not in inter.author.roles:
                     await inter.response.send_message('<:minecraft_deny:1080779495386140684> У вас нету банковской карты.',ephemeral=True)
+                    return
                 else:
                     await inter.send(f'<:minecraft_deny:1080779495386140684> У игрока {member.mention} нету банковской карты.',ephemeral=True)
+                    return
             if member == None:
                 await inter.send('<:minecraft_deny:1080779495386140684> У вас нету банковской карты.',ephemeral=True)
-            return
+                return
         else:
             for x in card_info:
                 card_id = x['id']
@@ -164,6 +169,7 @@ class PlayerCMD(commands.Cog):
                     Оформлена банкиром {banker.mention}.
                     Дата оформления: `{card_opendate}`''')
         await inter.send(embed=responce)
+        return
                 
 def setup(client):
     client.add_cog(PlayerCMD(client))
