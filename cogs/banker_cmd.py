@@ -42,7 +42,6 @@ class BankerCMD(commands.Cog):
         open_date = date.strftime("%Y-%m-%d %H:%M")
 
         #insert new card in DB
-        print(f'''INSERT INTO `cards`(`id`, `owner_id`, `banker_id`, `canbe_closed`, `balance`, `balance_limit`) VALUES ('{card_id}','{owner.id}','{banker.id}',false,0,0)''')
         base.send(f'''INSERT INTO `cards`(`id`, `owner_id`, `banker_id`, `canbe_closed`, `balance`, `balance_limit`) VALUES ('{card_id}','{owner.id}','{banker.id}',false,0,0)''')
 
         #gen and send responce message
@@ -72,10 +71,20 @@ class BankerCMD(commands.Cog):
     @commands.slash_command(name="снять-ары", description="💸 Снимает ары с указанной карты", test_guilds=[921483461016031263])
     @commands.has_role(1197579125037207572)
     @commands.cooldown(1, 10, commands.BucketType.user)
-    async def take_money(self, inter, card_id: int, sum: int):
+    async def take_money(self, inter, card_id: str, sum: int):
+        #card id validation
+        if(len(card_id) > 4):
+            await inter.send(f'<:minecraft_deny:1080779495386140684> Неправильный номер карты. Пример номера: `0001`.',ephemeral=True)
+            return
+        try:
+            int(card_id)
+        except ValueError:
+            await inter.send(f'<:minecraft_deny:1080779495386140684> Неправильный номер карты. Пример номера: `0001`.',ephemeral=True)
+            return
+        
         #get card info by card id
         card_info = base.request_one(f"SELECT * FROM `cards` WHERE id = {card_id}")
-        if card_info == ():
+        if card_info == None:
             await inter.send(f'<:minecraft_deny:1080779495386140684> Карта `FW-{card_id}` не найдена. Убедитесь, что вы ввели правильный номер.',ephemeral=True)
             return
         
@@ -126,9 +135,19 @@ class BankerCMD(commands.Cog):
     @commands.has_role(1197579125037207572)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def grant_money(self, inter, card_id: int, sum: int):
+        #card id validation
+        if(len(card_id) > 4):
+            await inter.send(f'<:minecraft_deny:1080779495386140684> Неправильный номер карты. Пример номера: `0001`.',ephemeral=True)
+            return
+        try:
+            int(card_id)
+        except ValueError:
+            await inter.send(f'<:minecraft_deny:1080779495386140684> Неправильный номер карты. Пример номера: `0001`.',ephemeral=True)
+            return
+        
         #gen card info by card id
         card_info = base.request_one(f"SELECT * FROM `cards` WHERE id = {card_id}")
-        if card_info == ():
+        if card_info == None:
             await inter.send(f'<:minecraft_deny:1080779495386140684> Карта `FW-{card_id}` не найдена. Убедитесь, что вы ввели правильный номер.',ephemeral=True)
             return
         logchannel = self.client.get_channel(1195653007703023727)
@@ -146,7 +165,7 @@ class BankerCMD(commands.Cog):
 
         #update card balance in DB
         base.send(f'''UPDATE `cards` SET `balance`= {balance} WHERE id = {card_id}''')
-        
+
         #gen and send responce
         responce_inter = f'<:minecraft_accept:1080779491875491882> Вы пополнили карту игрока {owner.mention} (`FW-{card_id}`) на {sum} АРов.'
         await inter.send(responce_inter,ephemeral=True)
