@@ -45,29 +45,29 @@ class PlayerCMD(commands.Cog):
         owner_balance = owner_card_info['balance']
         reciever_balance = reciever_card_info['balance']
         if owner_balance < sum:
-            await inter.send(f'<:minecraft_deny:1080779495386140684> На карте `FW-{owner_card_id}` недостаточно средств (Баланс: `{owner_balance}` АРов, а снимается `{sum}` АРов).',ephemeral=True)
+            await inter.send(f'<:minecraft_deny:1080779495386140684> На карте `FW-{owner_card_id}` недостаточно средств (Баланс: `{owner_balance}` алмазов, а снимается `{sum}` алмазов).',ephemeral=True)
             return
         owner_balance -= sum
         reciever_balance += sum
         
         #gen and send responce
-        await inter.send(f"<:minecraft_accept:1080779491875491882> 💸 Вы перевели {sum} АРов на карту `FW-{card_id}`.",ephemeral=True)
+        await inter.send(f"<:minecraft_accept:1080779491875491882> 💸 Вы перевели {sum} алмазов на карту `FW-{card_id}`.",ephemeral=True)
 
-        responce_chnl = discord.Embed(description=f'''### 💸 Игрок {owner.mention} перевёл игроку {reciever.mention} {sum} АРов
+        responce_chnl = discord.Embed(description=f'''### 💸 Игрок {owner.mention} перевёл игроку {reciever.mention} {sum} алмазов
                                         Карта владельца: `FW-{owner_card_id}`.
                                         Карта получателя: `FW-{card_id}`.
 
                                         Дата оформления транзакции: `{done_date}`.''',color=0xEFAF6F)
-        responce_chnl.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/856561382484475904/1195663985832366090/5526-icon-bank.png?ex=65b4cfdc&is=65a25adc&hm=58ceeeb52340e12b7bfd360db0dbdc048b0954800528f43c9bb7c3a4ab50ba4d&')
+        responce_chnl.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await logchannel.send(embed=responce_chnl)
 
-        responce_pm = discord.Embed(description=f'''### Вы перевели игроку {reciever.mention} {sum} АРов
+        responce_pm = discord.Embed(description=f'''### Вы перевели игроку {reciever.mention} {sum} алмазов
                                         Карта владельца: `FW-{owner_card_id}`.
                                         Карта получателя: `FW-{card_id}`.
 
                                         Дата оформления транзакции: `{done_date}`.
-                                        \nЕсли АРы были переведены не вами, немедленно сообщите об этом команде проекта.''',color=0xEFAF6F)
-        responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/856561382484475904/1195663985832366090/5526-icon-bank.png?ex=65b4cfdc&is=65a25adc&hm=58ceeeb52340e12b7bfd360db0dbdc048b0954800528f43c9bb7c3a4ab50ba4d&')
+                                        \nЕсли алмазы были переведены не вами, немедленно сообщите об этом команде проекта.''',color=0xEFAF6F)
+        responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await owner.send(embed=responce_pm)
 
         #update balance in DB
@@ -106,7 +106,7 @@ class PlayerCMD(commands.Cog):
             owner_card_id = owner_card_info['id']
             owner_balance = owner_card_info['balance']
             if owner_balance < fine_info['size']:
-                await inter.send(f"<:minecraft_deny:1080779495386140684> На карте `FW-{owner_card_id}` недостаточно средств (Баланс: `{owner_balance}` АРов, а для оплаты нужно `{fine_info['size']}` АРов).",ephemeral=True)
+                await inter.send(f"<:minecraft_deny:1080779495386140684> На карте `FW-{owner_card_id}` недостаточно средств (Баланс: `{owner_balance}` алмазов, а для оплаты нужно `{fine_info['size']}` алмазов).",ephemeral=True)
                 return
             owner_balance -= fine_info['size']
 
@@ -121,7 +121,7 @@ class PlayerCMD(commands.Cog):
 
             responce_chnl_system = discord.Embed(description=f'''### 💵 Игрок {owner.mention} оплатил штраф `{fine_info['id']}`
                                            Дата оформления транзакции: `{done_date}`.''',color=0xD0EF6F)
-            responce_chnl_system.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/856561382484475904/1195663985832366090/5526-icon-bank.png?ex=65b4cfdc&is=65a25adc&hm=58ceeeb52340e12b7bfd360db0dbdc048b0954800528f43c9bb7c3a4ab50ba4d&')
+            responce_chnl_system.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
             await logchannel.send(embed=responce_chnl_system)
 
             responce_chnl = discord.Embed(description=f'''### 💵 Игрок {owner.mention} оплатил штраф `{fine_info['id']}`''',color=0xD0EF6F)
@@ -130,7 +130,7 @@ class PlayerCMD(commands.Cog):
             responce_pm = discord.Embed(description=f'''### 💵 Ваш штраф `{fine_info['id']}` успешно оплачен
                                            Дата оформления транзакции: `{done_date}`.
                                            \nЕсли это был не ваш штраф, немедленно обратитесь в команду проекта.''',color=0xD0EF6F)
-            responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/856561382484475904/1195663985832366090/5526-icon-bank.png?ex=65b4cfdc&is=65a25adc&hm=58ceeeb52340e12b7bfd360db0dbdc048b0954800528f43c9bb7c3a4ab50ba4d&')
+            responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
             await owner.send(embed=responce_pm)
             return
 
@@ -138,10 +138,10 @@ class PlayerCMD(commands.Cog):
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def balance(self, inter, member: discord.Member = None):
         guild = self.client.get_guild(inter.guild.id) 
-        staff_role = discord.utils.get(guild.roles,id=1035865016714412122)
+        banker_role = discord.utils.get(guild.roles,id=1197579125037207572)
 
         if member != None:
-            if staff_role not in inter.author.roles:
+            if banker_role not in inter.author.roles:
                 member = inter.author
                 responce = discord.Embed(description=f'''### Информация по вашим картам:''',color=0xEFC06F)
                 responce.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/emojis/1105878293187678208.webp?size=96&quality=lossless')

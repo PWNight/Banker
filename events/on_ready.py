@@ -1,8 +1,5 @@
-from datetime import datetime
 import disnake as discord
-from disnake.ext import commands, tasks
-from api.server import base
-import datetime
+from disnake.ext import commands
 
 
 class OnReady(commands.Cog):

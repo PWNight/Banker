@@ -54,7 +54,7 @@ class BankerCMD(commands.Cog):
                                        Оформлена банкиром {banker.mention}.
 
                                        Дата оформления: `{open_date}`.''',color=0xEFD46F)
-        responce_chnl.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/856561382484475904/1195663985832366090/5526-icon-bank.png?ex=65b4cfdc&is=65a25adc&hm=58ceeeb52340e12b7bfd360db0dbdc048b0954800528f43c9bb7c3a4ab50ba4d&')
+        responce_chnl.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await logchannel.send(embed=responce_chnl)
 
         responce_pm = discord.Embed(description=f'''### На ваше имя оформлена карта
@@ -64,11 +64,11 @@ class BankerCMD(commands.Cog):
 
                                        Дата оформления: `{open_date}`.
                                        \nЕсли вы не запрашивали оформление карты, немедленно сообщите об этом в службу поддержки.''',color=0xEFD46F)
-        responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/856561382484475904/1195663985832366090/5526-icon-bank.png?ex=65b4cfdc&is=65a25adc&hm=58ceeeb52340e12b7bfd360db0dbdc048b0954800528f43c9bb7c3a4ab50ba4d&')
+        responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await owner.send(embed=responce_pm)
         return
 
-    @commands.slash_command(name="снять-ары", description="💸 Снимает ары с указанной карты", test_guilds=[921483461016031263])
+    @commands.slash_command(name="снять-алмазы", description="💸 Снимает алмазы с указанной карты", test_guilds=[921483461016031263])
     @commands.has_role(1197579125037207572)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def take_money(self, inter, card_id: str, sum: int):
@@ -100,7 +100,7 @@ class BankerCMD(commands.Cog):
         #get balance and calc new
         balance = card_info['balance']
         if balance < sum:
-            await inter.send(f'<:minecraft_deny:1080779495386140684> На карте `FW-{card_id}` недостаточно средств (Баланс: `{balance}` АРов, а снимается `{sum}` АРов).',ephemeral=True)
+            await inter.send(f'<:minecraft_deny:1080779495386140684> На карте `FW-{card_id}` недостаточно средств (Баланс: `{balance}` алмазов, а снимается `{sum}` алмазов).',ephemeral=True)
             return
         balance -= sum
 
@@ -108,26 +108,26 @@ class BankerCMD(commands.Cog):
         base.send(f'''UPDATE `cards` SET `balance`= {balance} WHERE id = {card_id}''')
 
         #gen and send responce
-        responce_inter = f'<:minecraft_accept:1080779491875491882> Вы сняли с карты игрока {owner.mention} (`FW-{card_id}`) {sum} АРов.'
+        responce_inter = f'<:minecraft_accept:1080779491875491882> Вы сняли с карты игрока {owner.mention} (`FW-{card_id}`) {sum} алмазов.'
         await inter.send(responce_inter,ephemeral=True)
 
-        responce_chnl = discord.Embed(description=f'''### 💸 Игрок {owner.mention} снял {sum} АРов с карты
+        responce_chnl = discord.Embed(description=f'''### 💸 Игрок {owner.mention} снял {sum} алмазов с карты
                                         Номер карты: `FW-{card_id}`.
-                                        Новый баланс: `{balance}` АРов.
+                                        Новый баланс: `{balance}` алмазов.
 
                                         Транзакция оформлена банкиром: {banker.mention}.
                                         Дата оформления транзакции: `{done_date}`.''',color=0xEF946F)
-        responce_chnl.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/856561382484475904/1195663985832366090/5526-icon-bank.png?ex=65b4cfdc&is=65a25adc&hm=58ceeeb52340e12b7bfd360db0dbdc048b0954800528f43c9bb7c3a4ab50ba4d&')
+        responce_chnl.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await logchannel.send(embed=responce_chnl)
 
-        responce_pm = discord.Embed(description=f'''### 💸 С вашей карты снято {sum} АРов
+        responce_pm = discord.Embed(description=f'''### 💸 С вашей карты снято {sum} алмазов
                                         Номер карты: `FW-{card_id}`.
-                                        Новый баланс: `{balance}` АРов.
+                                        Новый баланс: `{balance}` алмазов.
 
                                         Транзакция оформлена банкиром: {banker.mention}.
                                         Дата оформления транзакции: `{done_date}`.
-                                        \nЕсли АРы были сняты не вами, немедленно сообщите об этом в службу поддержки.''',color=0xEF946F)
-        responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/856561382484475904/1195663985832366090/5526-icon-bank.png?ex=65b4cfdc&is=65a25adc&hm=58ceeeb52340e12b7bfd360db0dbdc048b0954800528f43c9bb7c3a4ab50ba4d&')
+                                        \nЕсли алмазы были сняты не вами, немедленно сообщите об этом в службу поддержки.''',color=0xEF946F)
+        responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await owner.send(embed=responce_pm)
         return
         
@@ -167,24 +167,24 @@ class BankerCMD(commands.Cog):
         base.send(f'''UPDATE `cards` SET `balance`= {balance} WHERE id = {card_id}''')
 
         #gen and send responce
-        responce_inter = f'<:minecraft_accept:1080779491875491882> Вы пополнили карту игрока {owner.mention} (`FW-{card_id}`) на {sum} АРов.'
+        responce_inter = f'<:minecraft_accept:1080779491875491882> Вы пополнили карту игрока {owner.mention} (`FW-{card_id}`) на {sum} алмазов.'
         await inter.send(responce_inter,ephemeral=True)
-        responce_chnl = discord.Embed(description=f'''### 💸 Игрок {owner.mention} пополнил карту на {sum} АРов
+        responce_chnl = discord.Embed(description=f'''### 💸 Игрок {owner.mention} пополнил карту на {sum} алмазов
                                         Номер карты: `FW-{card_id}`.
-                                        Новый баланс: `{balance}` АРов.
+                                        Новый баланс: `{balance}` алмазов.
 
                                         Транзакция оформлена банкиром: {banker.mention}.
                                         Дата оформления транзакции: `{done_date}`.''',color=0xC4EF6F)
-        responce_chnl.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/856561382484475904/1195663985832366090/5526-icon-bank.png?ex=65b4cfdc&is=65a25adc&hm=58ceeeb52340e12b7bfd360db0dbdc048b0954800528f43c9bb7c3a4ab50ba4d&')
+        responce_chnl.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await logchannel.send(embed=responce_chnl)
-        responce_pm = discord.Embed(description=f'''### 💸 Ваша карта пополнена на {sum} АРов
+        responce_pm = discord.Embed(description=f'''### 💸 Ваша карта пополнена на {sum} алмазов
                                         Номер карты: `FW-{card_id}`.
-                                        Новый баланс: `{balance}` АРов.
+                                        Новый баланс: `{balance}` алмазов.
 
                                         Транзакция оформлена банкиром: {banker.mention}.
                                         Дата оформления транзакции: `{done_date}`.
-                                        \nЕсли АРы были пополнены не вами, немедленно сообщите об этом в службу поддержки.''',color=0xC4EF6F)
-        responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/856561382484475904/1195663985832366090/5526-icon-bank.png?ex=65b4cfdc&is=65a25adc&hm=58ceeeb52340e12b7bfd360db0dbdc048b0954800528f43c9bb7c3a4ab50ba4d&')
+                                        \nЕсли алмазы были пополнены не вами, немедленно сообщите об этом в службу поддержки.''',color=0xC4EF6F)
+        responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await owner.send(embed=responce_pm)
         return
 

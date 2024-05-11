@@ -1,5 +1,3 @@
-import sqlite3
-import psutil
 import disnake as discord
 from disnake.ext import commands
 from api.check import utils

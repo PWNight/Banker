@@ -1,4 +1,5 @@
 import pymysql
+
 def conn():
   connection = pymysql.connect(
   host='mysql3.joinserver.xyz',
@@ -9,6 +10,7 @@ def conn():
   cursorclass=pymysql.cursors.DictCursor
 )
   return connection
+
 def send(result):
   connection = conn()
   cursor = connection.cursor()
