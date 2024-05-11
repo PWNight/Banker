@@ -8,7 +8,7 @@ from api.server import base, main
 class BankerCMD(commands.Cog):
     def __init__(self, client):
         self.client = client
-    @commands.slash_command(name="создать-карту", description="💳 Создаёт банковскую карту на указанного игрока", test_guilds=[921483461016031263])
+    @commands.slash_command(name="создать-карту", description="💳 Создаёт банковскую карту на указанного пользователя", test_guilds=[921483461016031263])
     @commands.has_role(1197579125037207572)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def create_card(self, inter, member: discord.Member):
@@ -26,10 +26,17 @@ class BankerCMD(commands.Cog):
                 pass
             return random_int
         
+        #check if member != server player
+        guild = inter.guild
+        player_role = discord.utils.get(guild.roles,id=1197579125037207572)    
+        if(player_role not in member.roles):
+            await inter.send(f'<:minecraft_deny:1080779495386140684> Пользователь не является игроком проекта.',ephemeral=True)
+            return
+            
         #get member card info
         card_info = base.request_one(f"SELECT * FROM `cards` WHERE owner_id = {member.id}")
         if card_info != None:
-            await inter.send(f'<:minecraft_deny:1080779495386140684> У игрока уже есть зарегистрированная карта (`FW-{card_info["id"]}`)',ephemeral=True)
+            await inter.send(f'<:minecraft_deny:1080779495386140684> У пользователя уже есть зарегистрированная карта (`FW-{card_info["id"]}`)',ephemeral=True)
             return
                 
         logchannel = self.client.get_channel(1195653007703023727)
@@ -45,10 +52,10 @@ class BankerCMD(commands.Cog):
         base.send(f'''INSERT INTO `cards`(`id`, `owner_id`, `banker_id`, `canbe_closed`, `balance`, `balance_limit`) VALUES ('{card_id}','{owner.id}','{banker.id}',false,0,0)''')
 
         #gen and send responce message
-        responce_inter = f'<:minecraft_accept:1080779491875491882> Карта `FW-{card_id}` для игрока {owner.mention} успешно оформлена.'
+        responce_inter = f'<:minecraft_accept:1080779491875491882> Карта `FW-{card_id}` для пользователя {owner.mention} успешно оформлена.'
         await inter.send(responce_inter,ephemeral=True)
 
-        responce_chnl = discord.Embed(description=f'''### 💳 Игрок {owner.mention} оформил карту
+        responce_chnl = discord.Embed(description=f'''### 💳 Пользователь {owner.mention} оформил карту
                                        Номер карты: `FW-{card_id}`.
 
                                        Оформлена банкиром {banker.mention}.
@@ -108,10 +115,10 @@ class BankerCMD(commands.Cog):
         base.send(f'''UPDATE `cards` SET `balance`= {balance} WHERE id = {card_id}''')
 
         #gen and send responce
-        responce_inter = f'<:minecraft_accept:1080779491875491882> Вы сняли с карты игрока {owner.mention} (`FW-{card_id}`) {sum} алмазов.'
+        responce_inter = f'<:minecraft_accept:1080779491875491882> Вы сняли с карты пользователя {owner.mention} (`FW-{card_id}`) {sum} алмазов.'
         await inter.send(responce_inter,ephemeral=True)
 
-        responce_chnl = discord.Embed(description=f'''### 💸 Игрок {owner.mention} снял {sum} алмазов с карты
+        responce_chnl = discord.Embed(description=f'''### 💸 Пользователь {owner.mention} снял {sum} алмазов с карты
                                         Номер карты: `FW-{card_id}`.
                                         Новый баланс: `{balance}` алмазов.
 
@@ -131,7 +138,7 @@ class BankerCMD(commands.Cog):
         await owner.send(embed=responce_pm)
         return
         
-    @commands.slash_command(name="пополнить-карту", description="💸 Пополняет карту игрока", test_guilds=[921483461016031263])
+    @commands.slash_command(name="пополнить-карту", description="💸 Пополняет карту пользователя", test_guilds=[921483461016031263])
     @commands.has_role(1197579125037207572)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def grant_money(self, inter, card_id: int, sum: int):
@@ -167,9 +174,9 @@ class BankerCMD(commands.Cog):
         base.send(f'''UPDATE `cards` SET `balance`= {balance} WHERE id = {card_id}''')
 
         #gen and send responce
-        responce_inter = f'<:minecraft_accept:1080779491875491882> Вы пополнили карту игрока {owner.mention} (`FW-{card_id}`) на {sum} алмазов.'
+        responce_inter = f'<:minecraft_accept:1080779491875491882> Вы пополнили карту пользователя {owner.mention} (`FW-{card_id}`) на {sum} алмазов.'
         await inter.send(responce_inter,ephemeral=True)
-        responce_chnl = discord.Embed(description=f'''### 💸 Игрок {owner.mention} пополнил карту на {sum} алмазов
+        responce_chnl = discord.Embed(description=f'''### 💸 Пользователь {owner.mention} пополнил карту на {sum} алмазов
                                         Номер карты: `FW-{card_id}`.
                                         Новый баланс: `{balance}` алмазов.
 

@@ -24,7 +24,7 @@ class PlayerCMD(commands.Cog):
         owner_card_info = base.request_one(f"SELECT * FROM `cards` WHERE owner_id = {inter.author.id}")
         reciever_card_info = base.request_one(f"SELECT * FROM `cards` WHERE id = {card_id}")
         if owner_card_info == None:
-            await inter.send(f'<:minecraft_deny:1080779495386140684> Вы не обладаете никакими картами, обратитесь в отделение банка для оформления карты.',ephemeral=True)
+            await inter.send(f'<:minecraft_deny:1080779495386140684> На ваше имя нету зарегистрированных карт, обратитесь в отделение банка для оформления карты.',ephemeral=True)
             return
         if reciever_card_info == None:
             await inter.send(f'<:minecraft_deny:1080779495386140684> Карта `FW-{card_id}` не найдена. Убедитесь, что вы ввели правильный номер.',ephemeral=True)
@@ -53,7 +53,7 @@ class PlayerCMD(commands.Cog):
         #gen and send responce
         await inter.send(f"<:minecraft_accept:1080779491875491882> 💸 Вы перевели {sum} алмазов на карту `FW-{card_id}`.",ephemeral=True)
 
-        responce_chnl = discord.Embed(description=f'''### 💸 Игрок {owner.mention} перевёл игроку {reciever.mention} {sum} алмазов
+        responce_chnl = discord.Embed(description=f'''### 💸 Пользователь {owner.mention} перевёл пользователю {reciever.mention} {sum} алмазов
                                         Карта владельца: `FW-{owner_card_id}`.
                                         Карта получателя: `FW-{card_id}`.
 
@@ -61,7 +61,7 @@ class PlayerCMD(commands.Cog):
         responce_chnl.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await logchannel.send(embed=responce_chnl)
 
-        responce_pm = discord.Embed(description=f'''### Вы перевели игроку {reciever.mention} {sum} алмазов
+        responce_pm = discord.Embed(description=f'''### Вы перевели пользователю {reciever.mention} {sum} алмазов
                                         Карта владельца: `FW-{owner_card_id}`.
                                         Карта получателя: `FW-{card_id}`.
 
@@ -119,12 +119,12 @@ class PlayerCMD(commands.Cog):
             responce_inter = f"<:minecraft_accept:1080779491875491882> Штраф `{fine_info['id']}` успешно оплачен"
             await inter.send(responce_inter,ephemeral=True)
 
-            responce_chnl_system = discord.Embed(description=f'''### 💵 Игрок {owner.mention} оплатил штраф `{fine_info['id']}`
+            responce_chnl_system = discord.Embed(description=f'''### 💵 Пользователь {owner.mention} оплатил штраф `{fine_info['id']}`
                                            Дата оформления транзакции: `{done_date}`.''',color=0xD0EF6F)
             responce_chnl_system.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
             await logchannel.send(embed=responce_chnl_system)
 
-            responce_chnl = discord.Embed(description=f'''### 💵 Игрок {owner.mention} оплатил штраф `{fine_info['id']}`''',color=0xD0EF6F)
+            responce_chnl = discord.Embed(description=f'''### 💵 Пользователь {owner.mention} оплатил штраф `{fine_info['id']}`''',color=0xD0EF6F)
             await notifychannel.send(embed=responce_chnl)
 
             responce_pm = discord.Embed(description=f'''### 💵 Ваш штраф `{fine_info['id']}` успешно оплачен
@@ -134,7 +134,7 @@ class PlayerCMD(commands.Cog):
             await owner.send(embed=responce_pm)
             return
 
-    @commands.slash_command(name="баланс", description="Показывает баланс вашей карты или указанного игрока", test_guilds=[921483461016031263])
+    @commands.slash_command(name="баланс", description="Показывает баланс вашей карты или указанного Пользовательа", test_guilds=[921483461016031263])
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def balance(self, inter, member: discord.Member = None):
         guild = self.client.get_guild(inter.guild.id) 
@@ -156,7 +156,7 @@ class PlayerCMD(commands.Cog):
         #get card info by member id
         card_info = base.request_all(f"SELECT * FROM `cards` WHERE owner_id = {member.id}")
         if card_info == None:
-            await inter.send(f'<:minecraft_deny:1080779495386140684> Не нашёл зарегистрированной карты на имя {member.mention}',ephemeral=True)
+            await inter.send(f'<:minecraft_deny:1080779495386140684> Не нашёл зарегистрированных карт на имя {member.mention}',ephemeral=True)
             return
         else:
             for x in card_info:
