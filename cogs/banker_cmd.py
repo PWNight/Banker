@@ -141,7 +141,7 @@ class BankerCMD(commands.Cog):
     @commands.slash_command(name="пополнить-карту", description="💸 Пополняет карту пользователя", test_guilds=[921483461016031263])
     @commands.has_role(1197579125037207572)
     @commands.cooldown(1, 10, commands.BucketType.user)
-    async def grant_money(self, inter, card_id: int, sum: int):
+    async def grant_money(self, inter, card_id: str, sum: int):
         #card id validation
         if(len(card_id) > 4):
             await inter.send(f'<:minecraft_deny:1080779495386140684> Неправильный номер карты. Пример номера: `0001`.',ephemeral=True)
@@ -196,5 +196,6 @@ class BankerCMD(commands.Cog):
         return
 
 def setup(client):
+
 
     client.add_cog(BankerCMD(client))
