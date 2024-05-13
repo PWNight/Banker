@@ -10,6 +10,14 @@ class PlayerCMD(commands.Cog):
     @commands.slash_command(name="перевести", description="💵 Переводит алмазы на указанную карту", test_guilds=[921483461016031263])
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def give_money(self, inter, card_id: str, sum: int):
+        #sum validation
+        if(sum < 0):
+            await inter.send(f'<:minecraft_deny:1080779495386140684> Сумма не может быть ниже 0.',ephemeral=True)
+            return
+        if(sum > 1000):
+            await inter.send(f'<:minecraft_deny:1080779495386140684> За раз можно перевести не более 1000 алмазов.',ephemeral=True)
+            return
+        
         #card id validation
         if(len(card_id) > 4):
             await inter.send(f'<:minecraft_deny:1080779495386140684> Неправильный номер карты. Пример номера: `0001`.',ephemeral=True)
@@ -144,18 +152,18 @@ class PlayerCMD(commands.Cog):
             if banker_role not in inter.author.roles:
                 member = inter.author
                 responce = discord.Embed(description=f'''### Информация по вашим картам:''',color=0xEFC06F)
-                responce.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/emojis/1105878293187678208.webp?size=96&quality=lossless')
+                responce.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
             else:
                 responce = discord.Embed(description=f'''### Информация по картам {member.mention}:''',color=0xEFC06F)
-                responce.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/emojis/1105878293187678208.webp?size=96&quality=lossless')
+                responce.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         if member == None:
             member = inter.author
             responce = discord.Embed(description=f'''### Информация по вашим картам:''',color=0xEFC06F)
-            responce.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/emojis/1105878293187678208.webp?size=96&quality=lossless')
+            responce.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
 
         #get card info by member id
         card_info = base.request_all(f"SELECT * FROM `cards` WHERE owner_id = {member.id}")
-        if card_info == None:
+        if card_info == ():
             await inter.send(f'<:minecraft_deny:1080779495386140684> Не нашёл зарегистрированных карт на имя {member.mention}',ephemeral=True)
             return
         else:
@@ -168,7 +176,7 @@ class PlayerCMD(commands.Cog):
                     Баланс: `{card_balance}`.
                     Оформлена банкиром {banker.mention}.
                     Дата оформления: `{card_opendate}`''')
-        await inter.send(embed=responce)
+        await inter.send(embed=responce, ephemeral=True)
         return
                 
 def setup(client):

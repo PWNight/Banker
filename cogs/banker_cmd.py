@@ -79,6 +79,14 @@ class BankerCMD(commands.Cog):
     @commands.has_role(1197579125037207572)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def take_money(self, inter, card_id: str, sum: int):
+        #sum validation
+        if(sum < 0):
+            await inter.send(f'<:minecraft_deny:1080779495386140684> Сумма не может быть ниже 0.',ephemeral=True)
+            return
+        if(sum > 1000):
+            await inter.send(f'<:minecraft_deny:1080779495386140684> За раз можно снять не более 1000 алмазов.',ephemeral=True)
+            return
+        
         #card id validation
         if(len(card_id) > 4):
             await inter.send(f'<:minecraft_deny:1080779495386140684> Неправильный номер карты. Пример номера: `0001`.',ephemeral=True)
@@ -97,6 +105,12 @@ class BankerCMD(commands.Cog):
         
         logchannel = self.client.get_channel(1195653007703023727)
         owner_id = card_info['owner_id']
+        
+        #check owner id == inter.author.id
+        if(owner_id == inter.author.id):
+            await inter.send(f'<:minecraft_deny:1080779495386140684> Вы не можете перевести алмазы самому себе.',ephemeral=True)
+            return
+
         owner = await self.client.fetch_user(owner_id)
         banker = inter.author
         timezone_offset = +3.0
@@ -142,6 +156,14 @@ class BankerCMD(commands.Cog):
     @commands.has_role(1197579125037207572)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def grant_money(self, inter, card_id: str, sum: int):
+        #sum validation
+        if(sum < 0):
+            await inter.send(f'<:minecraft_deny:1080779495386140684> Сумма не может быть ниже 0.',ephemeral=True)
+            return
+        if(sum > 1000):
+            await inter.send(f'<:minecraft_deny:1080779495386140684> За раз можно пополнить не более 1000 алмазов.',ephemeral=True)
+            return
+        
         #card id validation
         if(len(card_id) > 4):
             await inter.send(f'<:minecraft_deny:1080779495386140684> Неправильный номер карты. Пример номера: `0001`.',ephemeral=True)
@@ -151,7 +173,7 @@ class BankerCMD(commands.Cog):
         except ValueError:
             await inter.send(f'<:minecraft_deny:1080779495386140684> Неправильный номер карты. Пример номера: `0001`.',ephemeral=True)
             return
-        
+
         #gen card info by card id
         card_info = base.request_one(f"SELECT * FROM `cards` WHERE id = {card_id}")
         if card_info == None:
@@ -196,6 +218,4 @@ class BankerCMD(commands.Cog):
         return
 
 def setup(client):
-
-
     client.add_cog(BankerCMD(client))
