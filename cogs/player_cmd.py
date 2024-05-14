@@ -11,8 +11,8 @@ class PlayerCMD(commands.Cog):
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def give_money(self, inter, card_id: str, sum: int):
         #sum validation
-        if(sum < 0):
-            await inter.send(f'<:minecraft_deny:1080779495386140684> Сумма не может быть ниже 0.',ephemeral=True)
+        if(sum < 0 or sum == 0):
+            await inter.send(f'<:minecraft_deny:1080779495386140684> Введена некорректная сумма. Принимаются только положительные числа.',ephemeral=True)
             return
         if(sum > 1000):
             await inter.send(f'<:minecraft_deny:1080779495386140684> За раз можно перевести не более 1000 алмазов.',ephemeral=True)
@@ -43,6 +43,12 @@ class PlayerCMD(commands.Cog):
         owner = await self.client.fetch_user(int(owner_id))
         owner_card_id = owner_card_info['id']
         reciever_id = reciever_card_info['owner_id']
+
+        #check users id
+        if(owner_id == reciever_id):
+            await inter.send(f'<:minecraft_deny:1080779495386140684> Вы не можете перевести алмазы самому себе.',ephemeral=True)
+            return
+        
         reciever = await self.client.fetch_user(int(reciever_id))
         timezone_offset = +3.0
         tzinfo = timezone(timedelta(hours=timezone_offset))

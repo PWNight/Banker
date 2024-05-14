@@ -80,8 +80,8 @@ class BankerCMD(commands.Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def take_money(self, inter, card_id: str, sum: int):
         #sum validation
-        if(sum < 0):
-            await inter.send(f'<:minecraft_deny:1080779495386140684> Сумма не может быть ниже 0.',ephemeral=True)
+        if(sum < 0 or sum == 0):
+            await inter.send(f'<:minecraft_deny:1080779495386140684> Введена некорректная сумма. Принимаются только положительные числа.',ephemeral=True)
             return
         if(sum > 1000):
             await inter.send(f'<:minecraft_deny:1080779495386140684> За раз можно снять не более 1000 алмазов.',ephemeral=True)
@@ -105,12 +105,6 @@ class BankerCMD(commands.Cog):
         
         logchannel = self.client.get_channel(1195653007703023727)
         owner_id = card_info['owner_id']
-        
-        #check owner id == inter.author.id
-        if(owner_id == inter.author.id):
-            await inter.send(f'<:minecraft_deny:1080779495386140684> Вы не можете перевести алмазы самому себе.',ephemeral=True)
-            return
-
         owner = await self.client.fetch_user(owner_id)
         banker = inter.author
         timezone_offset = +3.0
@@ -157,8 +151,8 @@ class BankerCMD(commands.Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def grant_money(self, inter, card_id: str, sum: int):
         #sum validation
-        if(sum < 0):
-            await inter.send(f'<:minecraft_deny:1080779495386140684> Сумма не может быть ниже 0.',ephemeral=True)
+        if(sum < 0 or sum == 0):
+            await inter.send(f'<:minecraft_deny:1080779495386140684> Введена некорректная сумма. Принимаются только положительные числа.',ephemeral=True)
             return
         if(sum > 1000):
             await inter.send(f'<:minecraft_deny:1080779495386140684> За раз можно пополнить не более 1000 алмазов.',ephemeral=True)
