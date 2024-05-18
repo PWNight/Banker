@@ -67,20 +67,11 @@ class PlayerCMD(commands.Cog):
         #gen and send responce
         await inter.send(f"<:minecraft_accept:1080779491875491882> 💸 Вы перевели {sum} алмазов на карту `FW-{card_id}`.",ephemeral=True)
 
-        responce_chnl = discord.Embed(description=f'''### 💸 Пользователь {owner.mention} перевёл пользователю {reciever.mention} {sum} алмазов
-                                        Карта владельца: `FW-{owner_card_id}`.
-                                        Карта получателя: `FW-{card_id}`.
-
-                                        Дата оформления транзакции: `{done_date}`.''',color=0xEFAF6F)
+        responce_chnl = discord.Embed(description=f"### 💸 Пользователь {owner.mention} перевёл пользователю {reciever.mention} {sum} алмазов \nКарта владельца: `FW-{owner_card_id}`. \nКарта получателя: `FW-{card_id}`. \n\nДата оформления транзакции: `{done_date}`.",color=0xEFAF6F)
         responce_chnl.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await logchannel.send(embed=responce_chnl)
 
-        responce_pm = discord.Embed(description=f'''### Вы перевели пользователю {reciever.mention} {sum} алмазов
-                                        Карта владельца: `FW-{owner_card_id}`.
-                                        Карта получателя: `FW-{card_id}`.
-
-                                        Дата оформления транзакции: `{done_date}`.
-                                        \nЕсли алмазы были переведены не вами, немедленно сообщите об этом команде проекта.''',color=0xEFAF6F)
+        responce_pm = discord.Embed(description=f"### Вы перевели пользователю {reciever.mention} {sum} алмазов \nКарта владельца: `FW-{owner_card_id}`. \nКарта получателя: `FW-{card_id}`. \nДата оформления транзакции: `{done_date}`. \n\nЕсли алмазы были переведены не вами, немедленно сообщите об этом команде проекта.",color=0xEFAF6F)
         responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await owner.send(embed=responce_pm)
 
@@ -133,17 +124,14 @@ class PlayerCMD(commands.Cog):
             responce_inter = f"<:minecraft_accept:1080779491875491882> Штраф `{fine_info['id']}` успешно оплачен"
             await inter.send(responce_inter,ephemeral=True)
 
-            responce_chnl_system = discord.Embed(description=f'''### 💵 Пользователь {owner.mention} оплатил штраф `{fine_info['id']}`
-                                           Дата оформления транзакции: `{done_date}`.''',color=0xD0EF6F)
+            responce_chnl_system = discord.Embed(description=f"### 💵 Пользователь {owner.mention} оплатил штраф `{fine_info['id']}` \nДата оформления транзакции: `{done_date}`.",color=0xD0EF6F)
             responce_chnl_system.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
             await logchannel.send(embed=responce_chnl_system)
 
             responce_chnl = discord.Embed(description=f'''### 💵 Пользователь {owner.mention} оплатил штраф `{fine_info['id']}`''',color=0xD0EF6F)
             await notifychannel.send(embed=responce_chnl)
 
-            responce_pm = discord.Embed(description=f'''### 💵 Ваш штраф `{fine_info['id']}` успешно оплачен
-                                           Дата оформления транзакции: `{done_date}`.
-                                           \nЕсли это был не ваш штраф, немедленно обратитесь в команду проекта.''',color=0xD0EF6F)
+            responce_pm = discord.Embed(description=f"### 💵 Ваш штраф `{fine_info['id']}` успешно оплачен \nДата оформления транзакции: `{done_date}`. \n\nЕсли это был не ваш штраф, немедленно обратитесь в команду проекта.",color=0xD0EF6F)
             responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
             await owner.send(embed=responce_pm)
             return
