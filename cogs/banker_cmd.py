@@ -73,8 +73,50 @@ class BankerCMD(commands.Cog):
                                        \nЕсли вы не запрашивали оформление карты, немедленно сообщите об этом в службу поддержки.''',color=0xEFD46F)
         responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await owner.send(embed=responce_pm)
-        return
 
+    @commands.slash_command(name="удалить-карту", description="💳 Удаляет указанную банковскую карту", test_guilds=[921483461016031263])
+    @commands.has_role(1197579125037207572)
+    @commands.cooldown(1, 10, commands.BucketType.user)
+    async def delete_card(self, inter, card_id: str):
+        #card id validation
+        if(len(card_id) != 4):
+            await inter.send(f'<:minecraft_deny:1080779495386140684> Неправильный номер карты. Пример номера: `0001`.',ephemeral=True)
+            return
+        try:
+            int(card_id)
+        except ValueError:
+            await inter.send(f'<:minecraft_deny:1080779495386140684> Неправильный номер карты. Пример номера: `0001`.',ephemeral=True)
+            return
+            
+        #get member card info
+        card_info = base.request_one(f"SELECT * FROM `cards` WHERE id = {card_id}")
+        if card_info != None:
+            await inter.send(f'<:minecraft_deny:1080779495386140684> Карта `FW-{card_id}` не найдена. Убедитесь, что вы ввели правильный номер)',ephemeral=True)
+            return
+                
+        logchannel = self.client.get_channel(1195653007703023727)
+        owner = await self.client.fetch_user(card_info['owner_id'])
+        banker = inter.author
+        timezone_offset = +3.0
+        tzinfo = timezone(timedelta(hours=timezone_offset))
+        date = datetime.datetime.now(tzinfo)
+        action_date = date.strftime("%Y-%m-%d %H:%M")
+
+        #insert new card in DB
+        base.send(f"DELETE FROM `cards` WHERE id = {card_id}")
+
+        #gen and send responce message
+        responce_inter = f'<:minecraft_accept:1080779491875491882> Карта `FW-{card_id}` пользователя {owner.mention} успешно удалена.'
+        await inter.send(responce_inter,ephemeral=True)
+
+        responce_chnl = discord.Embed(description=f"### 💳 Карта `FW-{card_id}` пользователя {owner.mention} удалена \nКарта удалена банкиром {banker.mention}. \n\nДата удаления: `{action_date}`.",color=0xEFD46F)
+        responce_chnl.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
+        await logchannel.send(embed=responce_chnl)
+
+        responce_pm = discord.Embed(description=f"### Ваша карта `FW-{card_id}` была удалена \nКарта удалена банкиром {banker.mention}. \nДата удаления: `{action_date}`. \n\nЕсли карта была удалена не по вашему заявлению - обратитесь в здание банка на спавне.",color=0xEFD46F)
+        responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
+        await owner.send(embed=responce_pm)
+    
     @commands.slash_command(name="снять-алмазы", description="💸 Снимает алмазы с указанной карты", test_guilds=[921483461016031263])
     @commands.has_role(1197579125037207572)
     @commands.cooldown(1, 10, commands.BucketType.user)
@@ -88,7 +130,7 @@ class BankerCMD(commands.Cog):
             return
         
         #card id validation
-        if(len(card_id) > 4):
+        if(len(card_id) != 4):
             await inter.send(f'<:minecraft_deny:1080779495386140684> Неправильный номер карты. Пример номера: `0001`.',ephemeral=True)
             return
         try:
@@ -104,8 +146,7 @@ class BankerCMD(commands.Cog):
             return
         
         logchannel = self.client.get_channel(1195653007703023727)
-        owner_id = card_info['owner_id']
-        owner = await self.client.fetch_user(owner_id)
+        owner = await self.client.fetch_user(card_info['owner_id'])
         banker = inter.author
         timezone_offset = +3.0
         tzinfo = timezone(timedelta(hours=timezone_offset))
@@ -144,7 +185,6 @@ class BankerCMD(commands.Cog):
                                         \nЕсли алмазы были сняты не вами, немедленно сообщите об этом в службу поддержки.''',color=0xEF946F)
         responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await owner.send(embed=responce_pm)
-        return
         
     @commands.slash_command(name="пополнить-карту", description="💸 Пополняет карту пользователя", test_guilds=[921483461016031263])
     @commands.has_role(1197579125037207572)
@@ -159,7 +199,7 @@ class BankerCMD(commands.Cog):
             return
         
         #card id validation
-        if(len(card_id) > 4):
+        if(len(card_id) != 4):
             await inter.send(f'<:minecraft_deny:1080779495386140684> Неправильный номер карты. Пример номера: `0001`.',ephemeral=True)
             return
         try:
@@ -173,6 +213,7 @@ class BankerCMD(commands.Cog):
         if card_info == None:
             await inter.send(f'<:minecraft_deny:1080779495386140684> Карта `FW-{card_id}` не найдена. Убедитесь, что вы ввели правильный номер.',ephemeral=True)
             return
+        
         logchannel = self.client.get_channel(1195653007703023727)
         owner_id = card_info['owner_id']
         owner = await self.client.fetch_user(owner_id)
@@ -209,7 +250,6 @@ class BankerCMD(commands.Cog):
                                         \nЕсли алмазы были пополнены не вами, немедленно сообщите об этом в службу поддержки.''',color=0xC4EF6F)
         responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await owner.send(embed=responce_pm)
-        return
 
 def setup(client):
     client.add_cog(BankerCMD(client))
