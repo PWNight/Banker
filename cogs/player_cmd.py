@@ -88,12 +88,12 @@ class PlayerCMD(commands.Cog):
     async def pay_invoice(self, inter, invoice_id = str):
         #card id validation
         if(len(invoice_id) != 6):
-            await inter.send(f'<:minecraft_deny:1080779495386140684> Неправильный номер счёта. Пример номера: `112233`.',ephemeral=True)
+            await inter.send(f'<:minecraft_deny:1080779495386140684> Неправильный номер счёта. Пример номера: `000001`.',ephemeral=True)
             return
         try:
             int(invoice_id)
         except ValueError:
-            await inter.send(f'<:minecraft_deny:1080779495386140684> Неправильный номер счёта. Пример номера: `112233`.',ephemeral=True)
+            await inter.send(f'<:minecraft_deny:1080779495386140684> Неправильный номер счёта. Пример номера: `000001`.',ephemeral=True)
             return
         
         #get owner and this card info
@@ -126,48 +126,31 @@ class PlayerCMD(commands.Cog):
             return
         owner_balance -= amount
 
-        #TODO: Дописать
+        #update balance and invoice status
+        base.send(f"UPDATE `cards` SET `balance`= {owner_balance} WHERE id = {owner_card_id}")
+        if(type == 'Штраф'):
+            base.send(f"UPDATE `cards` SET `balance`= {owner_balance} WHERE id = 0001")
+        else:
+            base.send(f"UPDATE `cards` SET `balance`= {owner_balance} WHERE id = 0002")
+        base.send(f"UPDATE `invoices` SET `status`= 'Оплачен' WHERE id = '{invoice_id}' ")
 
-        #async def pay(fine_info):
-        #    owner_card_info = base.request_one(f"SELECT * FROM `cards` WHERE owner_id = {owner.id}")
-        #    notifychannel = self.client.get_channel(1111753012441006201)
-        #    logchannel = self.client.get_channel(1195653007703023727)
-        #    timezone_offset = +3.0
-        #    tzinfo = timezone(timedelta(hours=timezone_offset))
-        #    date = datetime.datetime.now(tzinfo)
-        #    done_date = date.strftime("%Y-%m-%d %H:%M")
-#
-        #    #get card id, balance and calc new balance
-        #    owner_card_id = owner_card_info['id']
-        #    owner_balance = owner_card_info['balance']
-        #    if owner_balance < fine_info['size']:
-        #        await inter.send(f"<:minecraft_deny:1080779495386140684> На карте `FW-{owner_card_id}` недостаточно средств (Баланс: `{owner_balance}` алмазов, а для оплаты нужно `{fine_info['size']}` алмазов).",ephemeral=True)
-        #        return
-        #    owner_balance -= fine_info['size']
-#
-        #    #update balance in DB
-        #    base.send(f"UPDATE `cards` SET `balance`= {owner_balance} WHERE id = {owner_card_id}")
-        #    base.send(f"UPDATE `cards` SET `balance`= {fine_info['size']} WHERE id = 1")
-        #    base.send(f"UPDATE `fines` SET `status`= 'Оплачен' WHERE id = '{fine_info['id']}' ")
-#
-        #    #gen and send responce
-        #    responce_inter = f"<:minecraft_accept:1080779491875491882> Штраф `{fine_info['id']}` успешно оплачен"
-        #    await inter.send(responce_inter,ephemeral=True)
-#
-        #    responce_chnl_system = discord.Embed(description=f"### 💵 Пользователь {owner.mention} оплатил штраф `{fine_info['id']}`
-        #                                   Дата оформления транзакции: `{done_date}`.",color=0xD0EF6F)
-        #    responce_chnl_system.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
-        #    await logchannel.send(embed=responce_chnl_system)
-#
-        #    responce_chnl = discord.Embed(description=f"### 💵 Пользователь {owner.mention} оплатил штраф `{fine_info['id']}`",color=0xD0EF6F)
-        #    await notifychannel.send(embed=responce_chnl)
-#
-        #    responce_pm = discord.Embed(description=f"### 💵 Ваш штраф `{fine_info['id']}` успешно оплачен
-        #                                   Дата оформления транзакции: `{done_date}`.
-        #                                   \nЕсли это был не ваш штраф, немедленно обратитесь в команду проекта.",color=0xD0EF6F)
-        #    responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
-        #    await owner.send(embed=responce_pm)
-        #    return
+        logchannel = self.client.get_channel(1195653007703023727)
+        timezone_offset = +3.0
+        tzinfo = timezone(timedelta(hours=timezone_offset))
+        date = datetime.datetime.now(tzinfo)
+        done_date = date.strftime("%Y-%m-%d %H:%M")
+
+        #gen and send responce
+        await inter.send(f"<:minecraft_accept:1080779491875491882> Счёт `{invoice_id}` успешно оплачен",ephemeral=True)
+
+        responce_chnl_system = discord.Embed(description=f"### 💵 Пользователь {owner.mention} оплатил счёт `{invoice_id}` \nТип счёта: `{type}`\nСумма счёта: `{amount}` алмазов \n\nСчёт оформлен банкиром {invoice_author.mention} \nДата выполнения операции: `{done_date}`.",color=0xD0EF6F)
+        responce_chnl_system.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
+        await logchannel.send(embed=responce_chnl_system)
+
+        responce_pm = discord.Embed(description=f"### 💵 Вас счёт `{invoice_id}` успешно оплачен \nТип счёта: `{type}`\nСумма счёта: `{amount}` алмазов \n\nСчёт оформлен банкиром {invoice_author.mention} \nДата выполнения операции: `{done_date}`.",color=0xD0EF6F)
+        responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
+        await owner.send(embed=responce_pm)
+        return
 
     @commands.slash_command(name="баланс", description="Показывает баланс вашей карты или указанного Пользовательа", test_guilds=[921483461016031263])
     @commands.cooldown(1, 5, commands.BucketType.user)

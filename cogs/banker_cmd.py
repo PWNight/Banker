@@ -25,6 +25,14 @@ class BankerCMD(commands.Cog):
             if len(random_int) == 4:
                 pass
             return random_int
+        async def validate_id():
+            card_id = gen_id()
+            is_card_exists = base.request_one(f"SELECT * FROM `cards` WHERE id = {card_id}")
+            if is_card_exists != None:
+                validate_id()
+            else:
+                return card_id
+        card_id = validate_id()
         
         #check if member != server player
         guild = inter.guild
@@ -40,7 +48,6 @@ class BankerCMD(commands.Cog):
             return
                 
         logchannel = self.client.get_channel(1195653007703023727)
-        card_id = gen_id()
         owner = member
         banker = inter.author
         timezone_offset = +3.0
