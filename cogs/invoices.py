@@ -1,7 +1,8 @@
-from datetime import datetime
+import datetime
 import disnake as discord
 from disnake.ext import commands, tasks
 from api.server import base, main
+import random
 
 class Invoices(commands.Cog):
     def __init__(self, client):
@@ -9,16 +10,30 @@ class Invoices(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         await self.client.change_presence(activity = discord.Activity(type = discord.ActivityType.watching, name = f"за штрафами"))
-        self.status_task.start()
+        self.invoices_check.start()
 
     @tasks.loop(hours = 1)
-    async def status_task(self):
-            dates_mass = base.request_all(f"SELECT due_date FROM invoices WHERE status = 'Не оплачен'")
+    async def invoices_check(self):
+            curr_date = datetime.datetime.now()
+            curr_day = curr_date.day
+            if(curr_day == 21):
+                cards_mass = base.request_all(f"SELECT id, owner_id FROM cards")
+                for card in cards_mass:
+                    await Invoices.commision_invoice(self,card)
+                logchannel = self.client.get_channel(1111753012441006201)
+                responce_chnl = discord.Embed(description=f"### Выставлено {len(cards_mass)} счетов на оплату банковской комиссии \nНаступило 1-е число месяца, поэтому банковская система в автоматическом режиме выставила счета за обслуживание карт каждому клиенту.",color=0xF7B060)
+                responce_chnl.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/emojis/1105878293187678208.webp?size=96&quality=lossless')
+                await logchannel.send(embed=responce_chnl)
+            dates_mass = base.request_all(f"SELECT due_date, status FROM invoices WHERE status = 'Не оплачен' OR status = 'Просрочен' ")
             for date in dates_mass:
-                date = datetime.datetime.strptime(str(date['date_give']), '%Y-%m-%d %H:%M:%S')
+                status = date['status']
+                date = datetime.datetime.strptime(str(date['due_date']), '%Y-%m-%d %H:%M:%S')
                 if (datetime.datetime.now() - date) > datetime.timedelta(minutes=1):
                     invoice = base.request_one(f"SELECT * FROM invoices WHERE due_date = '{date}'")
-                    await Invoices.notify(self,date,invoice)
+                    if(status == 'Просрочен'):
+                        await Invoices.notify(self,date,invoice)
+                    else:
+                        await Invoices.twice_notify(self,date,invoice)
     async def notify(self,date,invoice):
         #calc new due_date for invoice
         new_date = date + datetime.timedelta(days=3)
@@ -39,6 +54,74 @@ class Invoices(commands.Cog):
         await logchannel.send(embed=responce_chnl)
 
         responce_pm = discord.Embed(description=f"### Ваш счёт `{invoice_id}` просрочен \nТип счёта: `{type}` \nСумма счёта: `{amount}` алмазов \nСчёт оформил {invoice_author.mention} \n\nСчёт должен был быть оплачен до `{date}` \nОплата счёта была перенесена до `{new_date}`, после повторной неуплаты будет заведено судебное дело.",color=0xF7B060)
+        responce_pm.set_footer(text=f'{main.copyright()} | ID: {invoice_id}',icon_url=f'https://cdn.discordapp.com/emojis/1105878293187678208.webp?size=96&quality=lossless')
+        await invoice_user.send(embed=responce_pm)
+
+    async def twice_notify(self,date,invoice):
+        logchannel = self.client.get_channel(1111753012441006201)
+        invoice_id = invoice['id']
+        invoice_user = await self.client.fetch_user(int(invoice['for_userid']))
+        invoice_author = await self.client.fetch_user(int(invoice['from_userid']))
+        amount = invoice['amount']
+        type = invoice['type']
+
+        #update invoice status
+        base.send(f"UPDATE `invoices` SET `status` = 'Повторно просрочен' WHERE id = '{invoice_id}'")
+
+        #gen msg and send
+        responce_chnl = discord.Embed(description=f"### Счёт `{invoice_id}` игрока {invoice_user.mention} повторно просрочен \nТип счёта: `{type}` \nСумма счёта: `{amount}` алмазов \nСчёт оформил {invoice_author.mention} \n\nСчёт должен был быть оплачен до `{date}` \nВ ближайшее время будет возбуждено судебное дело.",color=0xF7B060)
+        responce_chnl.set_footer(text=f'{main.copyright()} | ID: {invoice_id}',icon_url=f'https://cdn.discordapp.com/emojis/1105878293187678208.webp?size=96&quality=lossless')
+        await logchannel.send(embed=responce_chnl)
+
+        responce_pm = discord.Embed(description=f"### Ваш счёт `{invoice_id}` просрочен \nТип счёта: `{type}` \nСумма счёта: `{amount}` алмазов \nСчёт оформил {invoice_author.mention} \n\nСчёт должен был быть оплачен до `{date}` \nВ ближайшее время будет возбуждено судебное дело.",color=0xF7B060)
+        responce_pm.set_footer(text=f'{main.copyright()} | ID: {invoice_id}',icon_url=f'https://cdn.discordapp.com/emojis/1105878293187678208.webp?size=96&quality=lossless')
+        await invoice_user.send(embed=responce_pm)
+
+    async def commision_invoice(self,card):
+        #func gen card and validate card id (example: 0011)
+        def gen_id():
+            random_int = random.randint(1,999999)
+            random_int = str(random_int)
+            if len(random_int) == 1:
+                random_int = '00000' + random_int
+            if len(random_int) == 2:
+                random_int = '0000' + random_int
+            if len(random_int) == 3:
+                random_int = '000' + random_int
+            if len(random_int) == 4:
+                random_int = '00' + random_int
+            if len(random_int) == 5:
+                random_int = '0' + random_int
+            return random_int
+        
+        async def validate_id():
+            invoice_id = gen_id()
+            print(invoice_id)
+            is_card_exists = base.request_one(f"SELECT * FROM `invoices` WHERE id = '{invoice_id}'")
+            if is_card_exists != None:
+                validate_id()
+            else:
+                return invoice_id
+        #calc new due_date for invoice
+        curr_date = datetime.datetime.now()
+        new_date = curr_date + datetime.timedelta(days=30)
+        new_date = str(new_date).split('.')
+        new_date = new_date[0]
+        new_date = datetime.datetime.strptime(new_date, '%Y-%m-%d %H:%M:%S')
+        
+        invoice_id = await validate_id()
+        invoice_userid = card['owner_id']
+        invoice_user = await self.client.fetch_user(int(invoice_userid))
+        invoice_authorid = 1195315985532604506
+        amount = 10
+        type = 'Банковская комиссия'
+
+
+        #update invoice status
+        base.send(f"INSERT INTO invoices(id,type,for_userid,from_userid,amount,due_date,status) VALUES('{invoice_id}','{type}','{invoice_userid}','{invoice_authorid}',{amount},'{new_date}','Не оплачен')")
+
+        #gen msg and send
+        responce_pm = discord.Embed(description=f"### Вам выставлен счёт `{invoice_id}` на оплату банковской комиссии \nКаждое 1-е число месяца банковская система автоматически выставляет счета за обслуживание карт каждому клиенту. \nОплатить счёт можно по команде `/оплатить-счёт [номер-счёта]`",color=0xF7B060)
         responce_pm.set_footer(text=f'{main.copyright()} | ID: {invoice_id}',icon_url=f'https://cdn.discordapp.com/emojis/1105878293187678208.webp?size=96&quality=lossless')
         await invoice_user.send(embed=responce_pm)
          
