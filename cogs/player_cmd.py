@@ -71,9 +71,9 @@ class PlayerCMD(commands.Cog):
         #gen and send responce
         await inter.send(f"{config.accept} 💸 Вы перевели {sum} алмазов на карту `FW-{card_id}`.",ephemeral=True)
 
-        responce_chnl = discord.Embed(description=f"### 💸 Пользователь {owner.mention} перевёл пользователю {reciever.mention} {sum} алмазов \nКарта владельца: `FW-{owner_card_id}`. \nКарта получателя: `FW-{card_id}`. \n\nДата оформления транзакции: `{done_date}`.",color=0xEFAF6F)
-        responce_chnl.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
-        await logchannel.send(embed=responce_chnl)
+        responce_chnl_system = discord.Embed(description=f"### 💸 Пользователь {owner.mention} перевёл пользователю {reciever.mention} {sum} алмазов \nКарта владельца: `FW-{owner_card_id}`. \nКарта получателя: `FW-{card_id}`. \n\nДата оформления транзакции: `{done_date}`.",color=0xEFAF6F)
+        responce_chnl_system.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
+        await logchannel.send(embed=responce_chnl_system)
 
         responce_pm = discord.Embed(description=f"### Вы перевели пользователю {reciever.mention} {sum} алмазов \nКарта владельца: `FW-{owner_card_id}`. \nКарта получателя: `FW-{card_id}`. \nДата оформления транзакции: `{done_date}`. \n\nЕсли алмазы были переведены не вами, немедленно сообщите об этом команде проекта.",color=0xEFAF6F)
         responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')

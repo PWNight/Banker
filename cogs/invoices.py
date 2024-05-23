@@ -103,7 +103,9 @@ class Invoices(commands.Cog):
             else:
                 return invoice_id
         #calc new due_date for invoice
-        curr_date = datetime.datetime.now()
+        timezone_offset = +3.0
+        tzinfo = timezone(timedelta(hours=timezone_offset))
+        curr_date = datetime.datetime.now(tzinfo)
         new_date = curr_date + datetime.timedelta(days=30)
         new_date = str(new_date).split('.')
         new_date = new_date[0]
