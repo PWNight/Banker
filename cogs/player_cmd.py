@@ -136,6 +136,21 @@ class PlayerCMD(commands.Cog):
         date = datetime.datetime.now(tzinfo)
         done_date = date.strftime("%Y-%m-%d %H:%M")
 
+        #remove fine if type == fine
+        if(type == 'Штраф'):
+            fine = base.request_one(f"DELETE FROM fines WHERE invoice_id = '{invoice_id}'")
+            fine_id = fine['id']
+            notifychnl = self.client.get_channel(config.notifychnl)
+
+            responce_chnl = discord.Embed(description=f"### 💵 Пользователь {owner.mention} оплатил штраф `{fine_id}`",color=0xD0EF6F)
+            responce_chnl.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
+            await notifychnl.send(embed=responce_chnl)
+        
+            responce_pm = discord.Embed(description=f"### 💵 Ваш штраф `{fine_id}` успешно оплачен \nПриятной игры!",color=0xD0EF6F)
+            responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
+            await owner.send(embed=responce_pm)
+            return
+
         #gen and send responce
         await inter.send(f"{config.accept} Счёт `{invoice_id}` успешно оплачен",ephemeral=True)
 
