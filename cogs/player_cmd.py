@@ -138,7 +138,7 @@ class PlayerCMD(commands.Cog):
 
         #remove fine if type == fine
         if(type == 'Штраф'):
-            fine = base.request_one(f"DELETE FROM fines WHERE invoice_id = '{invoice_id}'")
+            fine = base.request_one(f"UPDATE fines SET status = 'Оплачен' WHERE invoice_id = '{invoice_id}'")
             fine_id = fine['id']
             notifychnl = self.client.get_channel(config.notifychnl)
 
