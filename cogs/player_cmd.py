@@ -75,7 +75,7 @@ class PlayerCMD(commands.Cog):
         responce_chnl_system.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await logchannel.send(embed=responce_chnl_system)
 
-        responce_pm = discord.Embed(description=f"### Вы перевели пользователю {reciever.mention} {sum} алмазов \nКарта владельца: `FW-{owner_card_id}`. \nКарта получателя: `FW-{card_id}`. \nДата оформления транзакции: `{done_date}`. \n\nЕсли алмазы были переведены не вами, немедленно сообщите об этом команде проекта.",color=0xEFAF6F)
+        responce_pm = discord.Embed(description=f"### Вы перевели {sum} алмазов на карту `FW-{card_id}` \nДата оформления транзакции: `{done_date}`. \n\nЕсли алмазы были переведены не вами, немедленно сообщите об этом команде проекта.",color=0xEFAF6F)
         responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await owner.send(embed=responce_pm)
         
@@ -142,27 +142,27 @@ class PlayerCMD(commands.Cog):
             fine_id = fine['id']
             notifychnl = self.client.get_channel(config.notifychnl)
 
-            responce_chnl = discord.Embed(description=f"### 💵 Пользователь {owner.mention} оплатил штраф `{fine_id}`",color=0xD0EF6F)
+            responce_chnl = discord.Embed(description=f"### 💵 Пользователь {owner.mention} оплатил штраф `{fine_id}`",color=0x80D8ED)
             responce_chnl.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
             await notifychnl.send(embed=responce_chnl)
         
-            responce_pm = discord.Embed(description=f"### 💵 Ваш штраф `{fine_id}` успешно оплачен \nПриятной игры!",color=0xD0EF6F)
+            responce_pm = discord.Embed(description=f"### Ваш штраф `{fine_id}` успешно оплачен \nПриятной игры!",color=0x80D8ED)
             responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
             await owner.send(embed=responce_pm)
             return
 
         #gen and send responce
-        await inter.send(f"{config.accept} Счёт `{invoice_id}` успешно оплачен",ephemeral=True)
+        await inter.send(f"{config.accept} Счёт `{invoice_id}` успешно оплачен.",ephemeral=True)
 
-        responce_chnl_system = discord.Embed(description=f"### 💵 Пользователь {owner.mention} оплатил счёт `{invoice_id}` \nТип счёта: `{type}`\nСумма счёта: `{amount}` алмазов \n\nСчёт оформлен банкиром {invoice_author.mention} \nДата выполнения операции: `{done_date}`.",color=0xD0EF6F)
+        responce_chnl_system = discord.Embed(description=f"### 💵 Пользователь {owner.mention} оплатил счёт `{invoice_id}` \nТип счёта: `{type}`\nСумма счёта: `{amount}` алмазов \n\nСчёт оформлен банкиром {invoice_author.mention} \nДата выполнения операции: `{done_date}`.",color=0x80D8ED)
         responce_chnl_system.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await logchannel.send(embed=responce_chnl_system)
 
-        responce_pm = discord.Embed(description=f"### 💵 Вас счёт `{invoice_id}` успешно оплачен \nТип счёта: `{type}`\nСумма счёта: `{amount}` алмазов \n\nСчёт оформлен банкиром {invoice_author.mention} \nДата выполнения операции: `{done_date}`.",color=0xD0EF6F)
+        responce_pm = discord.Embed(description=f"### Вас счёт `{invoice_id}` успешно оплачен \nТип счёта: `{type}`\nСумма счёта: `{amount}` алмазов \n\nСчёт оформлен банкиром {invoice_author.mention} \nДата выполнения операции: `{done_date}`.",color=0x80D8ED)
         responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await owner.send(embed=responce_pm)
 
-    @commands.slash_command(name="баланс", description="Показывает баланс вашей карты или указанного Пользовательа", test_guilds=[921483461016031263])
+    @commands.slash_command(name="баланс", description="💳 Показывает баланс вашей карты или указанного пользователя", test_guilds=[921483461016031263])
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def balance(self, inter, member: discord.Member = None):
         guild = self.client.get_guild(inter.guild.id) 
@@ -178,13 +178,13 @@ class PlayerCMD(commands.Cog):
                 responce.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         if member == None:
             member = inter.author
-            responce = discord.Embed(description=f"### Информация по вашим картам:",color=0xEFC06F)
+            responce = discord.Embed(description=f"### нформация по вашим картам:",color=0xEFC06F)
             responce.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
 
         #get card info by member id
         card_info = base.request_all(f"SELECT * FROM `cards` WHERE owner_id = {member.id}")
         if card_info == ():
-            await inter.send(f'{config.deny} Не нашёл зарегистрированных карт на имя {member.mention}',ephemeral=True)
+            await inter.send(f'{config.deny} Не нашёл зарегистрированных карт на имя {member.mention}.',ephemeral=True)
             return
         
         #gen and send responce
