@@ -25,7 +25,7 @@ class BankerCMD(commands.Cog):
                 random_int = '0' + random_int
             return random_int
         
-        async def validate_id():
+        def validate_id():
             card_id = gen_id()
             is_card_exists = base.request_one(f"SELECT * FROM `cards` WHERE id = {card_id}")
             if is_card_exists != None:
