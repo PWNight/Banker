@@ -56,7 +56,7 @@ class BankerCMD(commands.Cog):
         open_date = date.strftime("%Y-%m-%d %H:%M")
 
         #insert new card in DB
-        base.send(f'''INSERT INTO `cards`(`id`, `owner_id`, `banker_id`, `canbe_closed`, `balance`, `balance_limit`) VALUES ('{card_id}','{owner.id}','{banker.id}',false,0,0)''')
+        base.send(f'''INSERT INTO `cards`(`id`, `owner_id`, `banker_id`) VALUES ('{card_id}','{owner.id}','{banker.id}')''')
 
         #gen and send responce message
         await inter.send(f'{config.accept} Карта `FW-{card_id}` для пользователя {owner.mention} успешно оформлена.',ephemeral=True)
