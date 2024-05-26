@@ -4,7 +4,7 @@ from datetime import timezone, timedelta
 
 from disnake.ext import commands, tasks
 from api.server import base, main
-import random
+import random2
 
 class Invoices(commands.Cog):
     def __init__(self, client):
@@ -84,7 +84,7 @@ class Invoices(commands.Cog):
     async def commision_invoice(self,card):
         #func gen card and validate card id (example: 0011)
         def gen_id():
-            random_int = random.randint(1,999999)
+            random_int = random2.randint(1,999999)
             random_int = str(random_int)
             if len(random_int) == 1:
                 random_int = '00000' + random_int

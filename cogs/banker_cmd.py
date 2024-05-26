@@ -2,7 +2,7 @@ import disnake as discord
 import datetime
 from datetime import timezone, timedelta
 from disnake.ext import commands
-import random
+import random2
 from api.server import base, main
 from configs import config
 
@@ -15,7 +15,7 @@ class BankerCMD(commands.Cog):
     async def create_card(self, inter, member: discord.Member):
         #func gen card and validate card id (example: 0011)
         def gen_id():
-            random_int = random.randint(1,9999)
+            random_int = random2.randint(1,9999)
             random_int = str(random_int)
             if len(random_int) == 1:
                 random_int = '000' + random_int
