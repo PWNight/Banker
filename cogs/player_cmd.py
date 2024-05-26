@@ -115,17 +115,17 @@ class PlayerCMD(commands.Cog):
         invoice_author = await self.client.fetch_user(int(invoice['from_userid']))
 
         #get card id, balance and calc new balance
-        owner_card_id = owner_card_info['id']
-        owner_balance = owner_card_info['balance']
+        owner_card_id = int(owner_card_info['id'])
+        owner_balance = int(owner_card_info['balance'])
         if owner_balance < amount:
             await inter.send(f"{config.deny} На карте `FW-{owner_card_id}` недостаточно средств (Баланс: `{owner_balance}` алмазов, а для оплаты нужно `{amount}` алмазов).",ephemeral=True)
             return
         owner_balance -= amount
 
         #update balance and invoice status
-        base.send(f"UPDATE `cards` SET `balance`= {owner_balance} WHERE id = {owner_card_id}")
+        base.send(f"UPDATE `cards` SET `balance` = {owner_balance} WHERE id = {owner_card_id}")
         if(type == 'Штраф'):
-            base.send(f"UPDATE `cards` SET `balance`= {owner_balance} WHERE id = 0001")
+            base.send(f"UPDATE `cards` SET `balance` = {owner_balance} WHERE id = 0001")
         else:
             base.send(f"UPDATE `cards` SET `balance`= {owner_balance} WHERE id = 0002")
         base.send(f"UPDATE `invoices` SET `status`= 'Оплачен' WHERE id = '{invoice_id}' ")
