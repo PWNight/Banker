@@ -92,25 +92,26 @@ class PlayerCMD(commands.Cog):
             await inter.send(f'{config.deny} Неправильный номер счёта. Пример номера: `000001`.',ephemeral=True)
             return
         
-        #get owner and this card info
+        #get owner card info
         owner = inter.author
         owner_card_info = base.request_one(f"SELECT * FROM `cards` WHERE owner_id = {owner.id}")
         if owner_card_info == None:
             await inter.send(f'{config.deny} Вы не обладаете никакими картами, обратитесь в отделение банка для оформления карты.',ephemeral=True)
             return
         
+
         #check is invoice exists
-        invoice = base.request_all(f"SELECT * FROM `invoices` WHERE for_userid = {inter.author.id} AND id = '{invoice_id}' AND status != 'Оплачен'")
-        if invoice == ():
-            invoice = base.request_all(f"SELECT * FROM `invoices` WHERE id = '{invoice_id}' AND status != 'Оплачен'")
-            if invoice == ():
+        invoice = base.request_one(f"SELECT * FROM `invoices` WHERE for_userid = '{inter.author.id}' AND id = '{invoice_id}' AND status != 'Оплачен'")
+        if invoice == None:
+            invoice = base.request_one(f"SELECT * FROM `invoices` WHERE id = '{invoice_id}' AND status != 'Оплачен'")
+            if invoice == None:
                 await inter.send(f'{config.deny} Указанный вами счёт `{invoice_id}` не существует.',ephemeral=True)
                 return
             await inter.send(f'{config.deny} Указанный вами счёт `{invoice_id}` зарегистрирован не на ваш аккаунт.',ephemeral=True)
             return
         
         #get invoice info
-        amount = invoice['amount']
+        amount = int(invoice['amount'])
         type = invoice['type']
         invoice_author = await self.client.fetch_user(int(invoice['from_userid']))
 
@@ -123,14 +124,20 @@ class PlayerCMD(commands.Cog):
         owner_balance -= amount
 
         #update balance and invoice status
-        base.send(f"UPDATE `cards` SET `balance` = {owner_balance} WHERE id = {owner_card_id}")
+        base.send(f"UPDATE `cards` SET `balance` = '{owner_balance}' WHERE id = '{owner_card_id}'")
         if(type == 'Штраф'):
-            base.send(f"UPDATE `cards` SET `balance` = {owner_balance} WHERE id = 0001")
+            card1_info = base.request_one(f"SELECT balance FROM `cards` WHERE id = 0001")
+            balance = int(card1_info['balance'])
+            balance += amount
+            base.send(f"UPDATE `cards` SET `balance` = '{balance}' WHERE id = 0001")
         else:
-            base.send(f"UPDATE `cards` SET `balance`= {owner_balance} WHERE id = 0002")
+            card2_info = base.request_one(f"SELECT balance FROM `cards` WHERE id = 0002")
+            balance = int(card2_info['balance'])
+            balance += amount
+            base.send(f"UPDATE `cards` SET `balance` = '{balance}' WHERE id = 0002")
         base.send(f"UPDATE `invoices` SET `status`= 'Оплачен' WHERE id = '{invoice_id}' ")
 
-        logchannel = self.client.get_channel(config.logschannel)
+        logchannel = self.client.get_channel(int(config.logschannel))
         timezone_offset = +3.0
         tzinfo = timezone(timedelta(hours=timezone_offset))
         date = datetime.datetime.now(tzinfo)
@@ -138,29 +145,29 @@ class PlayerCMD(commands.Cog):
 
         #remove fine if type == fine
         if(type == 'Штраф'):
-            fine = base.request_one(f"UPDATE fines SET status = 'Оплачен' WHERE invoice_id = '{invoice_id}'")
+            base.send(f"UPDATE fines SET status = 'Оплачен' WHERE invoice_id = '{invoice_id}'")
+            fine = base.request_one(f"SELECT id FROM fines WHERE invoice_id = '{invoice_id}'")
             fine_id = fine['id']
-            notifychnl = self.client.get_channel(config.notifychnl)
+            notifychnl = self.client.get_channel(int(config.notifychnl))
 
-            responce_chnl = discord.Embed(description=f"### 💵 Пользователь {owner.mention} оплатил штраф `{fine_id}`",color=0x80D8ED)
+            responce_chnl = discord.Embed(description=f"### 💵 Пользователь {owner.mention} оплатил штраф `{fine_id}`",color=0xEFC06F)
             responce_chnl.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
             await notifychnl.send(embed=responce_chnl)
-        
-            responce_pm = discord.Embed(description=f"### Ваш штраф `{fine_id}` успешно оплачен \nПриятной игры!",color=0x80D8ED)
+
+            responce_pm = discord.Embed(description=f"### Ваш штраф `{fine_id}` успешно оплачен \nПриятной игры!",color=0xEFC06F)
             responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
             await owner.send(embed=responce_pm)
-            return
 
         #gen and send responce
         await inter.send(f"{config.accept} Счёт `{invoice_id}` успешно оплачен.",ephemeral=True)
 
-        responce_chnl_system = discord.Embed(description=f"### 💵 Пользователь {owner.mention} оплатил счёт `{invoice_id}` \nТип счёта: `{type}`\nСумма счёта: `{amount}` алмазов \n\nСчёт оформлен банкиром {invoice_author.mention} \nДата выполнения операции: `{done_date}`.",color=0x80D8ED)
+        responce_chnl_system = discord.Embed(description=f"### 💵 Пользователь {owner.mention} оплатил счёт `{invoice_id}` \nТип счёта: `{type}`\nСумма счёта: `{amount}` алмазов \n\nСчёт оформлен банкиром {invoice_author.mention} \nДата выполнения операции: `{done_date}`.",color=0xEFC06F)
         responce_chnl_system.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await logchannel.send(embed=responce_chnl_system)
 
-        responce_pm = discord.Embed(description=f"### Вас счёт `{invoice_id}` успешно оплачен \nТип счёта: `{type}`\nСумма счёта: `{amount}` алмазов \n\nСчёт оформлен банкиром {invoice_author.mention} \nДата выполнения операции: `{done_date}`.",color=0x80D8ED)
-        responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
-        await owner.send(embed=responce_pm)
+        responce_pm2 = discord.Embed(description=f"### Вас счёт `{invoice_id}` успешно оплачен \nТип счёта: `{type}`\nСумма счёта: `{amount}` алмазов \n\nСчёт оформлен банкиром {invoice_author.mention} \nДата выполнения операции: `{done_date}`.",color=0xEFC06F)
+        responce_pm2.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
+        await owner.send(embed=responce_pm2)
 
     @commands.slash_command(name="баланс", description="💳 Показывает баланс вашей карты или указанного пользователя", test_guilds=[921483461016031263])
     @commands.cooldown(1, 5, commands.BucketType.user)
@@ -178,7 +185,7 @@ class PlayerCMD(commands.Cog):
                 responce.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         if member == None:
             member = inter.author
-            responce = discord.Embed(description=f"### нформация по вашим картам:",color=0xEFC06F)
+            responce = discord.Embed(description=f"### Информация по вашим картам:",color=0xEFC06F)
             responce.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
 
         #get card info by member id
