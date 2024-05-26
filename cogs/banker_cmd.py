@@ -207,7 +207,7 @@ class BankerCMD(commands.Cog):
 
         #get balance and calc new
         balance = card_info['balance']
-        new_balance = balance - sum
+        new_balance = balance + sum
 
         #update card balance in DB
         base.send(f'''UPDATE `cards` SET `balance`= {new_balance} WHERE id = {card_id}''')
