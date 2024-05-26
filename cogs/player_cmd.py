@@ -153,21 +153,21 @@ class PlayerCMD(commands.Cog):
             fine_id = fine['id']
             notifychnl = self.client.get_channel(int(config.notifychnl))
 
-            responce_chnl = discord.Embed(description=f"### 💵 Пользователь {owner.mention} оплатил штраф `{fine_id}`",color=0xEFC06F)
+            responce_chnl = discord.Embed(description=f"### 💵 Пользователь {owner.mention} оплатил штраф `{fine_id}`",color=0x80d8ed)
             responce_chnl.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
             await notifychnl.send(embed=responce_chnl)
 
-            responce_pm = discord.Embed(description=f"### Ваш штраф `{fine_id}` успешно оплачен \nПриятной игры!",color=0xEFC06F)
+            responce_pm = discord.Embed(description=f"### Ваш штраф `{fine_id}` успешно оплачен \nПриятной игры!",color=0x80d8ed)
             responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
             await owner.send(embed=responce_pm)
 
         #gen and send responce
         
-        responce_chnl_system = discord.Embed(description=f"### 💵 Пользователь {owner.mention} оплатил счёт `{invoice_id}` \nТип счёта: `{type}`\nСумма счёта: `{amount}` алмазов \n\nСчёт оформлен банкиром {invoice_author.mention} \nДата выполнения операции: `{done_date}`.",color=0xEFC06F)
+        responce_chnl_system = discord.Embed(description=f"### 💵 Пользователь {owner.mention} оплатил счёт `{invoice_id}` \nТип счёта: `{type}`\nСумма счёта: `{amount}` алмазов \n\nСчёт оформлен банкиром {invoice_author.mention} \nДата выполнения операции: `{done_date}`.",color=0x80d8ed)
         responce_chnl_system.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await logchannel.send(embed=responce_chnl_system)
 
-        responce_pm2 = discord.Embed(description=f"### Вас счёт `{invoice_id}` успешно оплачен \nТип счёта: `{type}`\nСумма счёта: `{amount}` алмазов \n\nСчёт оформлен банкиром {invoice_author.mention} \nДата выполнения операции: `{done_date}`.",color=0xEFC06F)
+        responce_pm2 = discord.Embed(description=f"### Вас счёт `{invoice_id}` успешно оплачен \nТип счёта: `{type}`\nСумма счёта: `{amount}` алмазов \n\nСчёт оформлен банкиром {invoice_author.mention} \nДата выполнения операции: `{done_date}`.",color=0x80d8ed)
         responce_pm2.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await owner.send(embed=responce_pm2)
 
@@ -180,14 +180,14 @@ class PlayerCMD(commands.Cog):
         if member != None:
             if banker_role not in inter.author.roles:
                 member = inter.author
-                responce = discord.Embed(description=f"### Информация по вашим картам:",color=0xEFC06F)
+                responce = discord.Embed(description=f"### Информация по вашим картам:",color=0x80d8ed)
                 responce.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
             else:
-                responce = discord.Embed(description=f"### Информация по картам {member.mention}:",color=0xEFC06F)
+                responce = discord.Embed(description=f"### Информация по картам {member.mention}:",color=0x80d8ed)
                 responce.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         if member == None:
             member = inter.author
-            responce = discord.Embed(description=f"### Информация по вашим картам:",color=0xEFC06F)
+            responce = discord.Embed(description=f"### Информация по вашим картам:",color=0x80d8ed)
             responce.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
 
         #get card info by member id

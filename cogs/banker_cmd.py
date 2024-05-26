@@ -160,11 +160,11 @@ class BankerCMD(commands.Cog):
         #gen and send responce
         await inter.send(f'{config.accept} Вы сняли с карты пользователя {owner.mention} (`FW-{card_id}`) {sum} алмазов.',ephemeral=True)
 
-        responce_chnl_system = discord.Embed(description=f"### 💸 Пользователь {owner.mention} снял {sum} алмазов с карты `FW-{card_id}` \nБаланс: ~~{balance}~~ -> {new_balance} алмазов. \nТранзакция оформлена банкиром {banker.mention}. \nДата оформления транзакции: `{done_date}`.",color=0xEF946F)
+        responce_chnl_system = discord.Embed(description=f"### 💸 Пользователь {owner.mention} снял {sum} алмазов с карты `FW-{card_id}` \nБаланс: ~~{balance}~~ -> {new_balance} алмазов. \nТранзакция оформлена банкиром {banker.mention}. \nДата оформления транзакции: `{done_date}`.",color=0x80d8ed)
         responce_chnl_system.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await logchannel.send(embed=responce_chnl_system)
 
-        responce_pm = discord.Embed(description=f"### Вы сняли {sum} алмазов с карты `FW-{card_id}` \nБаланс: ~~{balance}~~ -> {new_balance} алмазов. \nТранзакция оформлена банкиром {banker.mention}. \nДата оформления транзакции: `{done_date}`.",color=0xEF946F)
+        responce_pm = discord.Embed(description=f"### Вы сняли {sum} алмазов с карты `FW-{card_id}` \nБаланс: ~~{balance}~~ -> {new_balance} алмазов. \nТранзакция оформлена банкиром {banker.mention}. \nДата оформления транзакции: `{done_date}`.",color=0x80d8ed)
         responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await owner.send(embed=responce_pm)
         
@@ -215,11 +215,11 @@ class BankerCMD(commands.Cog):
         #gen and send responce
         await inter.send(f'{config.accept} Вы пополнили карту пользователя {owner.mention} (`FW-{card_id}`) на {sum} алмазов.',ephemeral=True)
 
-        responce_chnl_system = discord.Embed(description=f"### 💸 Пользователь {owner.mention} пополнил карту `FW-{card_id}` на {sum} алмазов \nБаланс: ~~{balance}~~ -> {new_balance} алмазов. \nТранзакция оформлена банкиром {banker.mention}. \nДата оформления транзакции: `{done_date}`.",color=0xEF946F)
+        responce_chnl_system = discord.Embed(description=f"### 💸 Пользователь {owner.mention} пополнил карту `FW-{card_id}` на {sum} алмазов \nБаланс: ~~{balance}~~ -> {new_balance} алмазов. \nТранзакция оформлена банкиром {banker.mention}. \nДата оформления транзакции: `{done_date}`.",color=0x80d8ed)
         responce_chnl_system.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await logchannel.send(embed=responce_chnl_system)
 
-        responce_pm = discord.Embed(description=f"### Вы пополнили карту `FW-{card_id}` на {sum} алмазов \nБаланс: ~~{balance}~~ -> {new_balance} алмазов. \nТранзакция оформлена банкиром {banker.mention}. \nДата оформления транзакции: `{done_date}`.",color=0xEF946F)
+        responce_pm = discord.Embed(description=f"### Вы пополнили карту `FW-{card_id}` на {sum} алмазов \nБаланс: ~~{balance}~~ -> {new_balance} алмазов. \nТранзакция оформлена банкиром {banker.mention}. \nДата оформления транзакции: `{done_date}`.",color=0x80d8ed)
         responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await owner.send(embed=responce_pm)
 
