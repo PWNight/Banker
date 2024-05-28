@@ -82,10 +82,11 @@ class BankerCMD(commands.Cog):
         except ValueError:
             await inter.send(f'{config.deny} Неправильный номер карты. Пример номера: `0001`.',ephemeral=True)
             return
+        card_id = int(card_id)
             
         #get member card info
         card_info = base.request_one(f"SELECT * FROM `cards` WHERE id = {card_id}")
-        if card_info != None:
+        if card_info == None:
             await inter.send(f'{config.deny} Карта `FW-{card_id}` не найдена. Убедитесь, что вы ввели правильный номер.',ephemeral=True)
             return
                 
@@ -132,7 +133,8 @@ class BankerCMD(commands.Cog):
         except ValueError:
             await inter.send(f'{config.deny} Неправильный номер карты. Пример номера: `0001`.',ephemeral=True)
             return
-        
+        card_id = int(card_id)
+
         #get card info by card id
         card_info = base.request_one(f"SELECT * FROM `cards` WHERE id = {card_id}")
         if card_info == None:
@@ -148,14 +150,14 @@ class BankerCMD(commands.Cog):
         done_date = date.strftime("%Y-%m-%d %H:%M")
 
         #get balance and calc new
-        balance = card_info['balance']
+        balance = int(card_info['balance'])
         if balance < sum:
             await inter.send(f'{config.deny} На карте `FW-{card_id}` недостаточно средств. Баланс: `{balance}` алмазов, а снимается `{sum}` алмазов.',ephemeral=True)
             return
         new_balance = balance - sum
 
         #update card balance in DB
-        base.send(f'''UPDATE `cards` SET `balance`= {new_balance} WHERE id = {card_id}''')
+        base.send(f"UPDATE `cards` SET `balance`= {new_balance} WHERE id = {card_id}")
 
         #gen and send responce
         await inter.send(f'{config.accept} Вы сняли с карты пользователя {owner.mention} (`FW-{card_id}`) {sum} алмазов.',ephemeral=True)
@@ -189,6 +191,7 @@ class BankerCMD(commands.Cog):
         except ValueError:
             await inter.send(f'{config.deny} Неправильный номер карты. Пример номера: `0001`.',ephemeral=True)
             return
+        card_id = int(card_id)
 
         #gen card info by card id
         card_info = base.request_one(f"SELECT * FROM `cards` WHERE id = {card_id}")
@@ -206,11 +209,11 @@ class BankerCMD(commands.Cog):
         done_date = date.strftime("%Y-%m-%d %H:%M")
 
         #get balance and calc new
-        balance = card_info['balance']
+        balance = int(card_info['balance'])
         new_balance = balance + sum
 
         #update card balance in DB
-        base.send(f'''UPDATE `cards` SET `balance`= {new_balance} WHERE id = {card_id}''')
+        base.send(f"UPDATE `cards` SET `balance` = {new_balance} WHERE id = {card_id}")
 
         #gen and send responce
         await inter.send(f'{config.accept} Вы пополнили карту пользователя {owner.mention} (`FW-{card_id}`) на {sum} алмазов.',ephemeral=True)
