@@ -28,6 +28,7 @@ class PlayerCMD(commands.Cog):
         except ValueError:
             await inter.send(f'{config.deny} Неправильный номер карты. Пример номера: `0001`.',ephemeral=True)
             return
+        card_id = int(card_id)
         
         #get cards info by inter id and card id
         owner_card_info = base.request_one(f"SELECT * FROM `cards` WHERE owner_id = {inter.author.id}")
@@ -56,8 +57,8 @@ class PlayerCMD(commands.Cog):
         done_date = date.strftime("%Y-%m-%d %H:%M")
 
         #get and calc new balance
-        owner_balance = owner_card_info['balance']
-        reciever_balance = reciever_card_info['balance']
+        owner_balance = int(owner_card_info['balance'])
+        reciever_balance = int(reciever_card_info['balance'])
         if owner_balance < sum:
             await inter.send(f'{config.deny} На карте `FW-{owner_card_id}` недостаточно средств (Баланс: `{owner_balance}` алмазов, а снимается `{sum}` алмазов).',ephemeral=True)
             return
@@ -91,7 +92,8 @@ class PlayerCMD(commands.Cog):
         except ValueError:
             await inter.send(f'{config.deny} Неправильный номер счёта. Пример номера: `000001`.',ephemeral=True)
             return
-        
+        invoice_id = int(invoice_id)
+
         #get owner card info
         owner = inter.author
         owner_card_info = base.request_one(f"SELECT * FROM `cards` WHERE owner_id = {owner.id}")
@@ -101,9 +103,9 @@ class PlayerCMD(commands.Cog):
         
 
         #check is invoice exists
-        invoice = base.request_one(f"SELECT * FROM `invoices` WHERE for_userid = '{inter.author.id}' AND id = '{invoice_id}' AND status != 'Оплачен'")
+        invoice = base.request_one(f"SELECT * FROM `invoices` WHERE for_userid = '{inter.author.id}' AND id = {invoice_id} AND status != 'Оплачен'")
         if invoice == None:
-            invoice = base.request_one(f"SELECT * FROM `invoices` WHERE id = '{invoice_id}' AND status != 'Оплачен'")
+            invoice = base.request_one(f"SELECT * FROM `invoices` WHERE id = {invoice_id} AND status != 'Оплачен'")
             if invoice == None:
                 await inter.send(f'{config.deny} Указанный вами счёт `{invoice_id}` не существует.',ephemeral=True)
                 return
@@ -138,7 +140,7 @@ class PlayerCMD(commands.Cog):
             balance = int(card2_info['balance'])
             balance += amount
             base.send(f"UPDATE `cards` SET `balance` = '{balance}' WHERE id = 0002")
-        base.send(f"UPDATE `invoices` SET `status`= 'Оплачен' WHERE id = '{invoice_id}' ")
+        base.send(f"UPDATE `invoices` SET `status`= 'Оплачен' WHERE id = {invoice_id}")
 
         logchannel = self.client.get_channel(int(config.logschannel))
         timezone_offset = +3.0
@@ -148,8 +150,8 @@ class PlayerCMD(commands.Cog):
 
         #remove fine if type == fine
         if(type == 'Штраф'):
-            base.send(f"UPDATE fines SET status = 'Оплачен' WHERE invoice_id = '{invoice_id}'")
-            fine = base.request_one(f"SELECT id FROM fines WHERE invoice_id = '{invoice_id}'")
+            base.send(f"UPDATE fines SET status = 'Оплачен' WHERE invoice_id = {invoice_id}")
+            fine = base.request_one(f"SELECT id FROM fines WHERE invoice_id = {invoice_id}")
             fine_id = fine['id']
             notifychnl = self.client.get_channel(int(config.notifychnl))
 
