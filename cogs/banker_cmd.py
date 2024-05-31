@@ -36,7 +36,7 @@ class BankerCMD(commands.Cog):
         
         #check if member != server player
         guild = inter.guild
-        player_role = discord.utils.get(guild.roles,id=1197579125037207572)    
+        player_role = discord.utils.get(guild.roles,id=1172204202328592455)    
         if(player_role not in member.roles):
             await inter.send(f'{config.deny} Пользователь не является игроком проекта.',ephemeral=True)
             return
