@@ -120,8 +120,8 @@ class BankerCMD(commands.Cog):
         if(sum < 0 or sum == 0):
             await inter.send(f'{config.deny} Введена некорректная сумма. Принимаются только положительные числа.',ephemeral=True)
             return
-        if(sum > 1000):
-            await inter.send(f'{config.deny} За раз можно снять не более 1000 алмазов.',ephemeral=True)
+        if(sum > 5000):
+            await inter.send(f'{config.deny} За раз можно снять не более 5000 алмазов.',ephemeral=True)
             return
         
         #card id validation
@@ -178,8 +178,8 @@ class BankerCMD(commands.Cog):
         if(sum < 0 or sum == 0):
             await inter.send(f'{config.deny} Введена некорректная сумма. Принимаются только положительные числа.',ephemeral=True)
             return
-        if(sum > 1000):
-            await inter.send(f'{config.deny} За раз можно пополнить не более 1000 алмазов.',ephemeral=True)
+        if(sum > 5000):
+            await inter.send(f'{config.deny} За раз можно пополнить не более 5000 алмазов.',ephemeral=True)
             return
         
         #card id validation
