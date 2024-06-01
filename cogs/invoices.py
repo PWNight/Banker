@@ -18,8 +18,7 @@ class Invoices(commands.Cog):
     async def invoices_check(self):
             curr_date = datetime.datetime.now()
             curr_day = curr_date.day
-            #TODO: change day before release
-            if(curr_day == 25):
+            if(curr_day == 1):
                 cards_mass = base.request_all(f"SELECT id, owner_id FROM cards")
                 for card in cards_mass:
                     await Invoices.commision_invoice(self,card)
