@@ -96,7 +96,7 @@ class PlayerCMD(commands.Cog):
         except ValueError:
             await inter.send(f'{config.deny} Неправильный номер счёта. Пример номера: `000001`.',ephemeral=True)
             return
-        invoice_id = int(invoice_id)
+        invoice_id = invoice_id
 
         #get owner card info
         owner = inter.author
@@ -107,9 +107,9 @@ class PlayerCMD(commands.Cog):
         
 
         #check is invoice exists
-        invoice = base.request_one(f"SELECT * FROM `invoices` WHERE for_userid = '{inter.author.id}' AND id = {invoice_id} AND status != 'Оплачен'")
+        invoice = base.request_one(f"SELECT * FROM `invoices` WHERE for_userid = '{inter.author.id}' AND id = '{invoice_id}' AND status != 'Оплачен'")
         if invoice == None:
-            invoice = base.request_one(f"SELECT * FROM `invoices` WHERE id = {invoice_id} AND status != 'Оплачен'")
+            invoice = base.request_one(f"SELECT * FROM `invoices` WHERE id = '{invoice_id}' AND status != 'Оплачен'")
             if invoice == None:
                 await inter.send(f'{config.deny} Указанный вами счёт `{invoice_id}` не существует.',ephemeral=True)
                 return
@@ -129,9 +129,6 @@ class PlayerCMD(commands.Cog):
             return
         owner_balance -= amount
 
-        await inter.send(f"{config.accept} Счёт `{invoice_id}` успешно оплачен.",ephemeral=True)
-
-
         #update balance and invoice status
         base.send(f"UPDATE `cards` SET `balance` = '{owner_balance}' WHERE id = '{owner_card_id}'")
         if(type == 'Штраф'):
@@ -144,7 +141,7 @@ class PlayerCMD(commands.Cog):
             balance = int(card2_info['balance'])
             balance += amount
             base.send(f"UPDATE `cards` SET `balance` = '{balance}' WHERE id = 0002")
-        base.send(f"UPDATE `invoices` SET `status`= 'Оплачен' WHERE id = {invoice_id}")
+        base.send(f"UPDATE `invoices` SET `status`= 'Оплачен' WHERE id = '{invoice_id}'")
 
         logchannel = self.client.get_channel(int(config.logschannel))
         timezone_offset = +3.0
@@ -154,8 +151,8 @@ class PlayerCMD(commands.Cog):
 
         #remove fine if type == fine
         if(type == 'Штраф'):
-            base.send(f"UPDATE fines SET status = 'Оплачен' WHERE invoice_id = {invoice_id}")
-            fine = base.request_one(f"SELECT id FROM fines WHERE invoice_id = {invoice_id}")
+            base.send(f"UPDATE fines SET status = 'Оплачен' WHERE invoice_id = '{invoice_id}'")
+            fine = base.request_one(f"SELECT id FROM fines WHERE invoice_id = '{invoice_id}'")
             fine_id = fine['id']
             notifychnl = self.client.get_channel(int(config.notifychnl))
 
@@ -168,7 +165,8 @@ class PlayerCMD(commands.Cog):
             await owner.send(embed=responce_pm)
 
         #gen and send responce
-        
+        await inter.send(f"{config.accept} Счёт `{invoice_id}` успешно оплачен.",ephemeral=True)
+
         responce_chnl_system = discord.Embed(description=f"### 💵 Пользователь {owner.mention} оплатил счёт `{invoice_id}` \nТип счёта: `{type}`\nСумма счёта: `{amount}` алмазов \n\nСчёт оформлен банкиром {invoice_author.mention} \nДата выполнения операции: `{done_date}`.",color=0x80d8ed)
         responce_chnl_system.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await logchannel.send(embed=responce_chnl_system)

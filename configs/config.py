@@ -1,7 +1,7 @@
 # Основные настройки
 
 token = 'MTE5NTMxNTk4NTUzMjYwNDUwNg.GT-Al-.dG47plP5cVs9GZY4FY-1suQ_h25my9y2Qx-bH0' # Токен бота
-version = '1.0.5' # Версия бота
+version = '1.1.0' # Версия бота
 prefix = 'b.' # Префикс по стандарту
 
 #Эмодзи
@@ -10,6 +10,7 @@ deny = '<:minecraft_deny:1080779495386140684>'
 
 #Каналы
 logschannel = 1195653007703023727
+logserrors = 1247181315829141659
 notifychnl = 1111753012441006201
 
 #Сообщения
