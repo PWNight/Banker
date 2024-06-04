@@ -32,13 +32,13 @@ class Invoices(commands.Cog):
             invoices_mass = base.request_all(f"SELECT * FROM invoices WHERE status NOT IN ('Оплачен','Отменён')")
             for invoice in invoices_mass:
                 status = invoice['status']
-                date = invoice['due_date'] #datetime.datetime.strptime(str(date['due_date']), '%Y-%m-%d %H:%M:%S')
-                if(date - datetime.datetime.now()) > datetime.timedelta(minutes=1):
-                    print(status)
+                date_give = invoice['invoice_date']
+                due_date = invoice['due_date']
+                if(date_give > due_date):
                     if(status == 'Не оплачен'):
-                        await Invoices.notify(self,date,invoice)
+                        await Invoices.notify(self,due_date,invoice)
                     elif(status == 'Просрочен'):
-                        await Invoices.twice_notify(self,date,invoice)
+                        await Invoices.twice_notify(self,invoice)
     async def notify(self,date,invoice):
         #calc new due_date for invoice
         new_date = date + datetime.timedelta(days=3)
