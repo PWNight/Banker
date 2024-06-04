@@ -8,7 +8,7 @@ from configs import config
 class PlayerCMD(commands.Cog):
     def __init__(self, client):
         self.client = client
-    @commands.slash_command(name="перевести", description="💵 Переводит алмазы на указанную карту", test_guilds=[921483461016031263])
+    @commands.slash_command(name="перевести", description="💵 Переводит алмазы на указанную карту", guild_ids=[921483461016031263], test_guilds=[921483461016031263])
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def give_money(self, inter, card_id: str, sum: int):
         #sum validation
@@ -84,7 +84,7 @@ class PlayerCMD(commands.Cog):
         responce_reciever_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await reciever.send(embed=responce_reciever_pm)
         
-    @commands.slash_command(name="оплатить-счёт", description="💵 Оплачивает указанный счёт", test_guilds=[921483461016031263])
+    @commands.slash_command(name="оплатить-счёт", description="💵 Оплачивает указанный счёт", guild_ids=[921483461016031263], test_guilds=[921483461016031263])
     @commands.cooldown(1,10, commands.BucketType.user)
     async def pay_invoice(self, inter, invoice_id = str):
         #card id validation
@@ -175,7 +175,7 @@ class PlayerCMD(commands.Cog):
         responce_pm2.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await owner.send(embed=responce_pm2)
 
-    @commands.slash_command(name="баланс", description="💳 Показывает баланс вашей карты или указанного пользователя", test_guilds=[921483461016031263])
+    @commands.slash_command(name="баланс", description="💳 Показывает баланс вашей карты или указанного пользователя", guild_ids=[921483461016031263], test_guilds=[921483461016031263])
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def balance(self, inter, member: discord.Member = None):
         guild = self.client.get_guild(inter.guild.id) 

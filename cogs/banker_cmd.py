@@ -9,7 +9,7 @@ from configs import config
 class BankerCMD(commands.Cog):
     def __init__(self, client):
         self.client = client
-    @commands.slash_command(name="создать-карту", description="💳 Создаёт банковскую карту на указанного пользователя", test_guilds=[921483461016031263])
+    @commands.slash_command(name="создать-карту", description="💳 Создаёт банковскую карту на указанного пользователя", guild_ids=[921483461016031263], test_guilds=[921483461016031263])
     @commands.has_role(1197579125037207572)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def create_card(self, inter, member: discord.Member):
@@ -69,7 +69,7 @@ class BankerCMD(commands.Cog):
         responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await owner.send(embed=responce_pm)
 
-    @commands.slash_command(name="удалить-карту", description="💳 Удаляет указанную банковскую карту", test_guilds=[921483461016031263])
+    @commands.slash_command(name="удалить-карту", description="💳 Удаляет указанную банковскую карту", guild_ids=[921483461016031263], test_guilds=[921483461016031263])
     @commands.has_role(1197579125037207572)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def delete_card(self, inter, card_id: str):
@@ -112,7 +112,7 @@ class BankerCMD(commands.Cog):
         responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await owner.send(embed=responce_pm)
     
-    @commands.slash_command(name="снять-алмазы", description="💸 Снимает алмазы с указанной карты", test_guilds=[921483461016031263])
+    @commands.slash_command(name="снять-алмазы", description="💸 Снимает алмазы с указанной карты", guild_ids=[921483461016031263], test_guilds=[921483461016031263])
     @commands.has_role(1197579125037207572)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def take_money(self, inter, card_id: str, sum: int):
@@ -170,7 +170,7 @@ class BankerCMD(commands.Cog):
         responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await owner.send(embed=responce_pm)
         
-    @commands.slash_command(name="пополнить-карту", description="💸 Пополняет карту пользователя", test_guilds=[921483461016031263])
+    @commands.slash_command(name="пополнить-карту", description="💸 Пополняет карту пользователя", guild_ids=[921483461016031263], test_guilds=[921483461016031263])
     @commands.has_role(1197579125037207572)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def grant_money(self, inter, card_id: str, sum: int):
