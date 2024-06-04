@@ -29,15 +29,15 @@ class Invoices(commands.Cog):
 
     @tasks.loop(hours = 1)
     async def invoices_check(self):
-            dates_mass = base.request_all(f"SELECT due_date, status FROM invoices WHERE status = 'Не оплачен' OR status = 'Просрочен' ")
-            for date in dates_mass:
-                status = date['status']
-                date = datetime.datetime.strptime(str(date['due_date']), '%Y-%m-%d %H:%M:%S')
-                if (datetime.datetime.now() - date) > datetime.timedelta(minutes=1):
-                    invoice = base.request_one(f"SELECT * FROM invoices WHERE due_date = '{date}'")
-                    if(status == 'Просрочен'):
+            invoices_mass = base.request_all(f"SELECT * FROM invoices WHERE status NOT IN ('Оплачен','Отменён')")
+            for invoice in invoices_mass:
+                status = invoice['status']
+                date = invoice['due_date'] #datetime.datetime.strptime(str(date['due_date']), '%Y-%m-%d %H:%M:%S')
+                if(date - datetime.datetime.now()) > datetime.timedelta(minutes=1):
+                    print(status)
+                    if(status == 'Не оплачен'):
                         await Invoices.notify(self,date,invoice)
-                    elif(status == 'Повторно просрочен'):
+                    elif(status == 'Просрочен'):
                         await Invoices.twice_notify(self,date,invoice)
     async def notify(self,date,invoice):
         #calc new due_date for invoice
@@ -52,7 +52,7 @@ class Invoices(commands.Cog):
         type = invoice['type']
 
         #update invoice status
-        base.send(f"UPDATE `invoices` SET `status` = 'Просрочен', due_date = {due_date}  WHERE id = '{invoice_id}'")
+        base.send(f"UPDATE `invoices` SET `status` = 'Просрочен', due_date = '{due_date}' WHERE id = '{invoice_id}'")
 
         #gen msg and send
         responce_chnl = discord.Embed(description=f"### Счёт `{invoice_id}` игрока {invoice_user.mention} просрочен \nТип счёта: `{type}` \nСумма счёта: `{amount}` алмазов \nСчёт выставил {invoice_author.mention} \n\nСчёт должен был быть оплачен до ~~`{date}`~~ -> `{new_date}`. \nПосле повторной неуплаты будет заведено судебное дело.",color=0x80d8ed)
