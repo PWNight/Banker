@@ -13,7 +13,7 @@ class Error(commands.Cog):
     @commands.Cog.listener()
     async def on_slash_command_error(self,inter, exception):
         if isinstance(exception, commands.MissingRole):
-            await inter.send("<:minecraft_deny:1080779495386140684> Чтобы использовать команду нужна роль <@&1197579125037207572>",ephemeral=True)
+            await inter.send("<:minecraft_deny:1080779495386140684> У вас нету доступа к данной команде.",ephemeral=True)
         elif isinstance(exception, commands.CommandOnCooldown):
             await inter.send("<:minecraft_deny:1080779495386140684> Притормозите! Попробуйте использовать команду чуть позже",ephemeral=True)
         else:

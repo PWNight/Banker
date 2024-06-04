@@ -37,7 +37,7 @@ class Invoices(commands.Cog):
                     invoice = base.request_one(f"SELECT * FROM invoices WHERE due_date = '{date}'")
                     if(status == 'Просрочен'):
                         await Invoices.notify(self,date,invoice)
-                    else:
+                    elif(status == 'Повторно просрочен'):
                         await Invoices.twice_notify(self,date,invoice)
     async def notify(self,date,invoice):
         #calc new due_date for invoice
