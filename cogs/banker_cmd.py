@@ -13,6 +13,7 @@ class BankerCMD(commands.Cog):
     @commands.has_role(1197579125037207572)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def create_card(self, inter, member: discord.Member):
+        await inter.response.defer()
         #func gen card and validate card id (example: 0011)
         def gen_id():
             random_int = random2.randint(1,9999)
@@ -53,7 +54,11 @@ class BankerCMD(commands.Cog):
         timezone_offset = +3.0
         tzinfo = timezone(timedelta(hours=timezone_offset))
         date = datetime.datetime.now(tzinfo)
-        open_date = date.strftime("%Y-%m-%d %H:%M")
+        date = str(date).split('.')
+        date = date[0]
+        date_format = datetime.datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
+        timestamp = datetime.datetime.timestamp(date_format)
+        timestamp = f"<t:{timestamp}:f>"
 
         #insert new card in DB
         base.send(f'''INSERT INTO `cards`(`id`, `owner_id`, `banker_id`) VALUES ('{card_id}','{owner.id}','{banker.id}')''')
@@ -61,11 +66,11 @@ class BankerCMD(commands.Cog):
         #gen and send responce message
         await inter.send(f'{config.accept} Карта `FW-{card_id}` для пользователя {owner.mention} успешно оформлена.',ephemeral=True)
 
-        responce_chnl_system = discord.Embed(description=f"### 💳 Пользователь {owner.mention} оформил карту `FW-{card_id}` \nКарту оформил банкир {banker.mention}. \nДата оформления: `{open_date}`.",color=0x80D8ED)
+        responce_chnl_system = discord.Embed(description=f"### 💳 Пользователь {owner.mention} оформил карту `FW-{card_id}` \nКарту оформил банкир {banker.mention}. \nДата оформления: {timestamp}.",color=0x80D8ED)
         responce_chnl_system.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await logchannel.send(embed=responce_chnl_system)
 
-        responce_pm = discord.Embed(description=f"### Вы успешно оформили карту `FW-{card_id}` \nКарту оформил банкир {banker.mention}. \nДата оформления: `{open_date}`. \n\nЕсли вы не оформляли карту, немедленно сообщите об этом в <#1187849294942842900>.",color=0x80D8ED)
+        responce_pm = discord.Embed(description=f"### Вы успешно оформили карту `FW-{card_id}` \nКарту оформил банкир {banker.mention}. \nДата оформления: {timestamp}. \n\nЕсли вы не оформляли карту, немедленно сообщите об этом в <#1187849294942842900>.",color=0x80D8ED)
         responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await owner.send(embed=responce_pm)
 
@@ -73,6 +78,7 @@ class BankerCMD(commands.Cog):
     @commands.has_role(1197579125037207572)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def delete_card(self, inter, card_id: str):
+        await inter.response.defer()
         #card id validation
         if(len(card_id) != 4):
             await inter.send(f'{config.deny} Неправильный номер карты. Пример номера: `0001`.',ephemeral=True)
@@ -95,8 +101,10 @@ class BankerCMD(commands.Cog):
         banker = inter.author
         timezone_offset = +3.0
         tzinfo = timezone(timedelta(hours=timezone_offset))
-        date = datetime.datetime.now(tzinfo)
-        action_date = date.strftime("%Y-%m-%d %H:%M")
+        date = str(datetime.datetime.now(tzinfo)).split('.')[0]
+        date_format = datetime.datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
+        timestamp = int(str(datetime.datetime.timestamp(date_format)).split('.')[0])
+        timestamp = f"<t:{timestamp}:f>"
 
         #insert new card in DB
         base.send(f"DELETE FROM `cards` WHERE id = {card_id}")
@@ -104,11 +112,11 @@ class BankerCMD(commands.Cog):
         #gen and send responce message
         await inter.send(f'{config.accept} Карта `FW-{card_id}` пользователя {owner.mention} успешно удалена.',ephemeral=True)
 
-        responce_chnl_system = discord.Embed(description=f"### 💳 Карта `FW-{card_id}` пользователя {owner.mention} удалена \nКарта удалена банкиром {banker.mention}. \n\nДата удаления: `{action_date}`.",color=0x80D8ED)
+        responce_chnl_system = discord.Embed(description=f"### 💳 Карта `FW-{card_id}` пользователя {owner.mention} удалена \nКарта удалена банкиром {banker.mention}. \n\nДата удаления: {timestamp}.",color=0x80D8ED)
         responce_chnl_system.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await logchannel.send(embed=responce_chnl_system)
 
-        responce_pm = discord.Embed(description=f"### Ваша карта `FW-{card_id}` была удалена \nКарта удалена банкиром {banker.mention}. \nДата удаления: `{action_date}`. \n\nЕсли карта была удалена не по вашему заявлению - обратитесь в <#1187849294942842900>.",color=0x80D8ED)
+        responce_pm = discord.Embed(description=f"### Ваша карта `FW-{card_id}` была удалена \nКарта удалена банкиром {banker.mention}. \nДата удаления: {timestamp}. \n\nЕсли карта была удалена не по вашему заявлению - обратитесь в <#1187849294942842900>.",color=0x80D8ED)
         responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await owner.send(embed=responce_pm)
     
@@ -116,6 +124,7 @@ class BankerCMD(commands.Cog):
     @commands.has_role(1197579125037207572)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def take_money(self, inter, card_id: str, sum: int):
+        await inter.response.defer()
         #sum validation
         if(sum < 0 or sum == 0):
             await inter.send(f'{config.deny} Введена некорректная сумма. Принимаются только положительные числа.',ephemeral=True)
@@ -146,8 +155,10 @@ class BankerCMD(commands.Cog):
         banker = inter.author
         timezone_offset = +3.0
         tzinfo = timezone(timedelta(hours=timezone_offset))
-        date = datetime.datetime.now(tzinfo)
-        done_date = date.strftime("%Y-%m-%d %H:%M")
+        date = str(datetime.datetime.now(tzinfo)).split('.')[0]
+        date_format = datetime.datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
+        timestamp = int(str(datetime.datetime.timestamp(date_format)).split('.')[0])
+        timestamp = f"<t:{timestamp}:f>"
 
         #get balance and calc new
         balance = int(card_info['balance'])
@@ -162,11 +173,11 @@ class BankerCMD(commands.Cog):
         #gen and send responce
         await inter.send(f'{config.accept} Вы сняли с карты пользователя {owner.mention} (`FW-{card_id}`) {sum} алмазов.',ephemeral=True)
 
-        responce_chnl_system = discord.Embed(description=f"### 💸 Пользователь {owner.mention} снял {sum} алмазов с карты `FW-{card_id}` \nБаланс: ~~{balance}~~ -> {new_balance} алмазов. \nТранзакция оформлена банкиром {banker.mention}. \nДата оформления транзакции: `{done_date}`.",color=0x80d8ed)
+        responce_chnl_system = discord.Embed(description=f"### 💸 Пользователь {owner.mention} снял {sum} алмазов с карты `FW-{card_id}` \nБаланс: ~~{balance}~~ -> {new_balance} алмазов. \nТранзакция оформлена банкиром {banker.mention}. \nДата оформления транзакции: {timestamp}.",color=0x80d8ed)
         responce_chnl_system.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await logchannel.send(embed=responce_chnl_system)
 
-        responce_pm = discord.Embed(description=f"### Вы сняли {sum} алмазов с карты `FW-{card_id}` \nБаланс: ~~{balance}~~ -> {new_balance} алмазов. \nТранзакция оформлена банкиром {banker.mention}. \nДата оформления транзакции: `{done_date}`.",color=0x80d8ed)
+        responce_pm = discord.Embed(description=f"### Вы сняли {sum} алмазов с карты `FW-{card_id}` \nБаланс: ~~{balance}~~ -> {new_balance} алмазов. \nТранзакция оформлена банкиром {banker.mention}. \nДата оформления транзакции: {timestamp}.",color=0x80d8ed)
         responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await owner.send(embed=responce_pm)
         
@@ -174,6 +185,7 @@ class BankerCMD(commands.Cog):
     @commands.has_role(1197579125037207572)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def grant_money(self, inter, card_id: str, sum: int):
+        await inter.response.defer()
         #sum validation
         if(sum < 0 or sum == 0):
             await inter.send(f'{config.deny} Введена некорректная сумма. Принимаются только положительные числа.',ephemeral=True)
@@ -205,8 +217,10 @@ class BankerCMD(commands.Cog):
         banker = inter.author
         timezone_offset = +3.0
         tzinfo = timezone(timedelta(hours=timezone_offset))
-        date = datetime.datetime.now(tzinfo)
-        done_date = date.strftime("%Y-%m-%d %H:%M")
+        date = str(datetime.datetime.now(tzinfo)).split('.')[0]
+        date_format = datetime.datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
+        timestamp = int(str(datetime.datetime.timestamp(date_format)).split('.')[0])
+        timestamp = f"<t:{timestamp}:f>"
 
         #get balance and calc new
         balance = int(card_info['balance'])
@@ -218,11 +232,11 @@ class BankerCMD(commands.Cog):
         #gen and send responce
         await inter.send(f'{config.accept} Вы пополнили карту пользователя {owner.mention} (`FW-{card_id}`) на {sum} алмазов.',ephemeral=True)
 
-        responce_chnl_system = discord.Embed(description=f"### 💸 Пользователь {owner.mention} пополнил карту `FW-{card_id}` на {sum} алмазов \nБаланс: ~~{balance}~~ -> {new_balance} алмазов. \nТранзакция оформлена банкиром {banker.mention}. \nДата оформления транзакции: `{done_date}`.",color=0x80d8ed)
+        responce_chnl_system = discord.Embed(description=f"### 💸 Пользователь {owner.mention} пополнил карту `FW-{card_id}` на {sum} алмазов \nБаланс: ~~{balance}~~ -> {new_balance} алмазов. \nТранзакция оформлена банкиром {banker.mention}. \nДата оформления транзакции: {timestamp}.",color=0x80d8ed)
         responce_chnl_system.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await logchannel.send(embed=responce_chnl_system)
 
-        responce_pm = discord.Embed(description=f"### Вы пополнили карту `FW-{card_id}` на {sum} алмазов \nБаланс: ~~{balance}~~ -> {new_balance} алмазов. \nТранзакция оформлена банкиром {banker.mention}. \nДата оформления транзакции: `{done_date}`.",color=0x80d8ed)
+        responce_pm = discord.Embed(description=f"### Вы пополнили карту `FW-{card_id}` на {sum} алмазов \nБаланс: ~~{balance}~~ -> {new_balance} алмазов. \nТранзакция оформлена банкиром {banker.mention}. \nДата оформления транзакции: {timestamp}.",color=0x80d8ed)
         responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await owner.send(embed=responce_pm)
 

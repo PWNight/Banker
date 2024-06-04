@@ -11,6 +11,7 @@ class PlayerCMD(commands.Cog):
     @commands.slash_command(name="перевести", description="💵 Переводит алмазы на указанную карту", guild_ids=[921483461016031263], test_guilds=[921483461016031263])
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def give_money(self, inter, card_id: str, sum: int):
+        await inter.response.defer()
         #sum validation
         if(sum < 0 or sum == 0):
             await inter.send(f'{config.deny} Введена некорректная сумма. Принимаются только положительные числа.',ephemeral=True)
@@ -53,8 +54,10 @@ class PlayerCMD(commands.Cog):
         reciever = await self.client.fetch_user(int(reciever_id))
         timezone_offset = +3.0
         tzinfo = timezone(timedelta(hours=timezone_offset))
-        date = datetime.datetime.now(tzinfo)
-        done_date = date.strftime("%Y-%m-%d %H:%M")
+        date = str(datetime.datetime.now(tzinfo)).split('.')[0]
+        date_format = datetime.datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
+        timestamp = int(str(datetime.datetime.timestamp(date_format)).split('.')[0])
+        timestamp = f"<t:{timestamp}:f>"
 
         #get and calc new balance
         owner_balance = int(owner_card_info['balance'])
@@ -72,21 +75,22 @@ class PlayerCMD(commands.Cog):
         #gen and send responce
         await inter.send(f"{config.accept} 💸 Вы перевели {sum} алмазов на карту `FW-{card_id}`.",ephemeral=True)
 
-        responce_chnl_system = discord.Embed(description=f"### 💸 Пользователь {owner.mention} перевёл пользователю {reciever.mention} {sum} алмазов \nКарта владельца: `FW-{owner_card_id}`. \nКарта получателя: `FW-{card_id}`. \n\nДата оформления транзакции: `{done_date}`.",color=0xEFAF6F)
+        responce_chnl_system = discord.Embed(description=f"### 💸 Пользователь {owner.mention} перевёл пользователю {reciever.mention} {sum} алмазов \nКарта владельца: `FW-{owner_card_id}`. \nКарта получателя: `FW-{card_id}`. \n\nДата оформления транзакции: {timestamp}.",color=0xEFAF6F)
         responce_chnl_system.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await logchannel.send(embed=responce_chnl_system)
 
-        responce_owner_pm = discord.Embed(description=f"### Вы перевели {sum} алмазов на карту `FW-{card_id}` \nДата оформления транзакции: `{done_date}`.",color=0xEFAF6F)
+        responce_owner_pm = discord.Embed(description=f"### Вы перевели {sum} алмазов на карту `FW-{card_id}` \nДата оформления транзакции: {timestamp}.",color=0xEFAF6F)
         responce_owner_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await owner.send(embed=responce_owner_pm)
 
-        responce_reciever_pm = discord.Embed(description=f"### Вы получили {sum} алмазов на карту `FW-{card_id}` \nПеревод поступил от {owner.mention} (`FW-{owner_card_id}`) \nДата оформления транзакции: `{done_date}`.",color=0xEFAF6F)
+        responce_reciever_pm = discord.Embed(description=f"### Вы получили {sum} алмазов на карту `FW-{card_id}` \nПеревод поступил от {owner.mention} (`FW-{owner_card_id}`) \nДата оформления транзакции: {timestamp}.",color=0xEFAF6F)
         responce_reciever_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await reciever.send(embed=responce_reciever_pm)
         
     @commands.slash_command(name="оплатить-счёт", description="💵 Оплачивает указанный счёт", guild_ids=[921483461016031263], test_guilds=[921483461016031263])
     @commands.cooldown(1,10, commands.BucketType.user)
     async def pay_invoice(self, inter, invoice_id = str):
+        await inter.response.defer()
         #card id validation
         if(len(invoice_id) != 6):
             await inter.send(f'{config.deny} Неправильный номер счёта. Пример номера: `000001`.',ephemeral=True)
@@ -146,8 +150,10 @@ class PlayerCMD(commands.Cog):
         logchannel = self.client.get_channel(int(config.logschannel))
         timezone_offset = +3.0
         tzinfo = timezone(timedelta(hours=timezone_offset))
-        date = datetime.datetime.now(tzinfo)
-        done_date = date.strftime("%Y-%m-%d %H:%M")
+        date = str(datetime.datetime.now(tzinfo)).split('.')[0]
+        date_format = datetime.datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
+        timestamp = int(str(datetime.datetime.timestamp(date_format)).split('.')[0])
+        timestamp = f"<t:{timestamp}:f>"
 
         #remove fine if type == fine
         if(type == 'Штраф'):
@@ -167,17 +173,18 @@ class PlayerCMD(commands.Cog):
         #gen and send responce
         await inter.send(f"{config.accept} Счёт `{invoice_id}` успешно оплачен.",ephemeral=True)
 
-        responce_chnl_system = discord.Embed(description=f"### 💵 Пользователь {owner.mention} оплатил счёт `{invoice_id}` \nТип счёта: `{type}`\nСумма счёта: `{amount}` алмазов \n\nСчёт оформлен банкиром {invoice_author.mention} \nДата выполнения операции: `{done_date}`.",color=0x80d8ed)
+        responce_chnl_system = discord.Embed(description=f"### 💵 Пользователь {owner.mention} оплатил счёт `{invoice_id}` \nТип счёта: `{type}`\nСумма счёта: `{amount}` алмазов \n\nСчёт оформлен банкиром {invoice_author.mention} \nДата выполнения операции: {timestamp}.",color=0x80d8ed)
         responce_chnl_system.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await logchannel.send(embed=responce_chnl_system)
 
-        responce_pm2 = discord.Embed(description=f"### Вас счёт `{invoice_id}` успешно оплачен \nТип счёта: `{type}`\nСумма счёта: `{amount}` алмазов \n\nСчёт оформлен банкиром {invoice_author.mention} \nДата выполнения операции: `{done_date}`.",color=0x80d8ed)
+        responce_pm2 = discord.Embed(description=f"### Вас счёт `{invoice_id}` успешно оплачен \nТип счёта: `{type}`\nСумма счёта: `{amount}` алмазов \n\nСчёт оформлен банкиром {invoice_author.mention} \nДата выполнения операции: {timestamp}.",color=0x80d8ed)
         responce_pm2.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await owner.send(embed=responce_pm2)
 
     @commands.slash_command(name="баланс", description="💳 Показывает баланс вашей карты или указанного пользователя", guild_ids=[921483461016031263], test_guilds=[921483461016031263])
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def balance(self, inter, member: discord.Member = None):
+        await inter.response.defer()
         guild = self.client.get_guild(inter.guild.id) 
         banker_role = discord.utils.get(guild.roles,id=1197579125037207572)
 
