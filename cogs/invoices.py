@@ -39,6 +39,7 @@ class Invoices(commands.Cog):
                         await Invoices.notify(self,due_date,invoice)
                     elif(status == 'Просрочен'):
                         await Invoices.twice_notify(self,invoice)
+                        
     async def notify(self,date,invoice):
         #calc new due_date for invoice
         new_date = date + datetime.timedelta(days=3)
