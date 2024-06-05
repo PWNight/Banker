@@ -13,7 +13,7 @@ class BankerCMD(commands.Cog):
     @commands.has_role(1197579125037207572)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def create_card(self, inter, member: discord.Member):
-        await inter.response.defer()
+        await inter.response.defer(ephemeral = True)
         #func gen card and validate card id (example: 0011)
         def gen_id():
             random_int = random2.randint(1,9999)
@@ -78,7 +78,7 @@ class BankerCMD(commands.Cog):
     @commands.has_role(1197579125037207572)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def delete_card(self, inter, card_id: str):
-        await inter.response.defer()
+        await inter.response.defer(ephemeral = True)
         #card id validation
         if(len(card_id) != 4):
             await inter.send(f'{config.deny} Неправильный номер карты. Пример номера: `0001`.',ephemeral=True)
@@ -124,7 +124,7 @@ class BankerCMD(commands.Cog):
     @commands.has_role(1197579125037207572)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def take_money(self, inter, card_id: str, sum: int):
-        await inter.response.defer()
+        await inter.response.defer(ephemeral = True)
         #sum validation
         if(sum < 0 or sum == 0):
             await inter.send(f'{config.deny} Введена некорректная сумма. Принимаются только положительные числа.',ephemeral=True)
@@ -185,7 +185,7 @@ class BankerCMD(commands.Cog):
     @commands.has_role(1197579125037207572)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def grant_money(self, inter, card_id: str, sum: int):
-        await inter.response.defer()
+        await inter.response.defer(ephemeral = True)
         #sum validation
         if(sum < 0 or sum == 0):
             await inter.send(f'{config.deny} Введена некорректная сумма. Принимаются только положительные числа.',ephemeral=True)

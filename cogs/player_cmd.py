@@ -11,7 +11,7 @@ class PlayerCMD(commands.Cog):
     @commands.slash_command(name="перевести", description="💵 Переводит алмазы на указанную карту", guild_ids=[921483461016031263], test_guilds=[921483461016031263])
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def give_money(self, inter, card_id: str, sum: int):
-        await inter.response.defer()
+        await inter.response.defer(ephemeral = True)
         #sum validation
         if(sum < 0 or sum == 0):
             await inter.send(f'{config.deny} Введена некорректная сумма. Принимаются только положительные числа.',ephemeral=True)
@@ -90,7 +90,7 @@ class PlayerCMD(commands.Cog):
     @commands.slash_command(name="оплатить-счёт", description="💵 Оплачивает указанный счёт", guild_ids=[921483461016031263], test_guilds=[921483461016031263])
     @commands.cooldown(1,10, commands.BucketType.user)
     async def pay_invoice(self, inter, invoice_id = str):
-        await inter.response.defer()
+        await inter.response.defer(ephemeral = True)
         #card id validation
         if(len(invoice_id) != 6):
             await inter.send(f'{config.deny} Неправильный номер счёта. Пример номера: `000001`.',ephemeral=True)
@@ -184,7 +184,7 @@ class PlayerCMD(commands.Cog):
     @commands.slash_command(name="баланс", description="💳 Показывает баланс вашей карты или указанного пользователя", guild_ids=[921483461016031263], test_guilds=[921483461016031263])
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def balance(self, inter, member: discord.Member = None):
-        await inter.response.defer()
+        await inter.response.defer(ephemeral = True)
         guild = self.client.get_guild(inter.guild.id) 
         banker_role = discord.utils.get(guild.roles,id=1197579125037207572)
 
