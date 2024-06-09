@@ -108,7 +108,6 @@ class PlayerCMD(commands.Cog):
         if owner_card_info == None:
             await inter.send(f'{config.deny} Вы не обладаете никакими картами, обратитесь в отделение банка для оформления карты.',ephemeral=True)
             return
-        
 
         #check is invoice exists
         invoice = base.request_one(f"SELECT * FROM `invoices` WHERE for_userid = '{inter.author.id}' AND id = '{invoice_id}' AND status != 'Оплачен'")
@@ -135,16 +134,10 @@ class PlayerCMD(commands.Cog):
 
         #update balance and invoice status
         base.send(f"UPDATE `cards` SET `balance` = '{owner_balance}' WHERE id = '{owner_card_id}'")
-        if(type == 'Штраф'):
-            card1_info = base.request_one(f"SELECT balance FROM `cards` WHERE id = 0001")
-            balance = int(card1_info['balance'])
-            balance += amount
-            base.send(f"UPDATE `cards` SET `balance` = '{balance}' WHERE id = 0001")
-        else:
-            card2_info = base.request_one(f"SELECT balance FROM `cards` WHERE id = 0002")
-            balance = int(card2_info['balance'])
-            balance += amount
-            base.send(f"UPDATE `cards` SET `balance` = '{balance}' WHERE id = 0002")
+        card1_info = base.request_one(f"SELECT balance FROM `cards` WHERE id = 0001")
+        balance = int(card1_info['balance'])
+        balance += amount
+        base.send(f"UPDATE `cards` SET `balance` = '{balance}' WHERE id = 0001")
         base.send(f"UPDATE `invoices` SET `status`= 'Оплачен' WHERE id = '{invoice_id}'")
 
         logchannel = self.client.get_channel(int(config.logschannel))

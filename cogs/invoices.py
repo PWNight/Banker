@@ -127,7 +127,7 @@ class Invoices(commands.Cog):
 
 
         #update invoice status
-        base.send(f"INSERT INTO invoices(id,type,for_userid,from_userid,amount,due_date,status) VALUES('{invoice_id}','{type}','{invoice_userid}','{invoice_authorid}',{amount},'{new_date}','Не оплачен')")
+        base.send(f"INSERT INTO invoices(id,type,for_userid,from_userid,to_userid,amount,due_date,status) VALUES('{invoice_id}','{type}','{invoice_userid}','{invoice_authorid}','1195315985532604506',{amount},'{new_date}','Не оплачен')")
 
         #gen msg and send
         responce_pm = discord.Embed(description=f"### Вам выставлен счёт `{invoice_id}` суммов в {amount} алмазов на оплату банковской комиссии \nКаждое 1-е число месяца банковская система автоматически выставляет счета за обслуживание карт каждому клиенту. \nОплатить счёт можно по команде `/оплатить-счёт [номер-счёта]`",color=0x80d8ed)
