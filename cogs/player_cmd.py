@@ -179,7 +179,7 @@ class PlayerCMD(commands.Cog):
     async def balance(self, inter, member: discord.Member = None):
         await inter.response.defer(ephemeral = True)
         guild = self.client.get_guild(inter.guild.id) 
-        banker_role = discord.utils.get(guild.roles,id=1197579125037207572)
+        banker_role = discord.utils.get(guild.roles,id=config.banker_role)
 
         if member != None:
             if banker_role not in inter.author.roles:

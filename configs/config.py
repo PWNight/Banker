@@ -1,7 +1,7 @@
 # Основные настройки
 
 token = 'MTE5NTMxNTk4NTUzMjYwNDUwNg.GT-Al-.dG47plP5cVs9GZY4FY-1suQ_h25my9y2Qx-bH0' # Токен бота
-version = '1.6.0' # Версия бота
+version = '1.6.1' # Версия бота
 prefix = 'b.' # Префикс по стандарту
 
 #Эмодзи
@@ -22,3 +22,4 @@ notify_msg = 1219956082051518524
 #Роли & Пользователи
 pwnight = 660070694377357322
 player_role = 1172204202328592455
+banker_role = 1197579125037207572

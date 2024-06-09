@@ -14,6 +14,7 @@ class BankerCMD(commands.Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def create_card(self, inter, member: discord.Member):
         await inter.response.defer(ephemeral = True)
+        
         #func gen card and validate card id (example: 0011)
         def gen_id():
             random_int = random2.randint(1,9999)
