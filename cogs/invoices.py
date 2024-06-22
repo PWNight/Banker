@@ -32,13 +32,13 @@ class Invoices(commands.Cog):
         invoices_mass = base.request_all(f"SELECT * FROM invoices WHERE status NOT IN ('Оплачен','Отменён')")
         for invoice in invoices_mass:
             status = invoice['status']
-            date_give = invoice['invoice_date']
+            curr_date = datetime.datetime.now()
             due_date = invoice['due_date']
-            if(date_give > due_date):
+            if(curr_date > due_date):
                 if(status == 'Не оплачен'):
                     await Invoices.notify(self,due_date,invoice)
                 elif(status == 'Просрочен'):
-                    await Invoices.twice_notify(self,invoice)
+                    await Invoices.twice_notify(self,due_date,invoice)
                         
     async def notify(self,date,invoice):
         #calc new due_date for invoice
@@ -80,7 +80,7 @@ class Invoices(commands.Cog):
         responce_chnl.set_footer(text=f'{main.copyright()} | ID: {invoice_id}',icon_url=f'https://cdn.discordapp.com/emojis/1105878293187678208.webp?size=96&quality=lossless')
         await logchannel.send(embed=responce_chnl)
 
-        responce_pm = discord.Embed(description=f"### Ваш счёт `{invoice_id}` просрочен \nТип счёта: `{type}` \nСумма счёта: `{amount}` алмазов \nСчёт оформил {invoice_author.mention} \n\nСчёт должен был быть оплачен до `{date}`",color=0x80d8ed)
+        responce_pm = discord.Embed(description=f"### Ваш счёт `{invoice_id}` повторно просрочен \nТип счёта: `{type}` \nСумма счёта: `{amount}` алмазов \nСчёт оформил {invoice_author.mention} \n\nСчёт должен был быть оплачен до `{date}`",color=0x80d8ed)
         responce_pm.set_footer(text=f'{main.copyright()} | ID: {invoice_id}',icon_url=f'https://cdn.discordapp.com/emojis/1105878293187678208.webp?size=96&quality=lossless')
         await invoice_user.send(embed=responce_pm)
 
