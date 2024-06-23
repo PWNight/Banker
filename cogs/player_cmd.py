@@ -103,23 +103,25 @@ class PlayerCMD(commands.Cog):
         invoice_id = invoice_id
 
         #get owner card info
-        owner = inter.author
-        owner_card_info = base.request_one(f"SELECT * FROM `cards` WHERE owner_id = {owner.id}")
+        owner_inter = inter.author
+        owner_card_info = base.request_one(f"SELECT * FROM `cards` WHERE owner_id = {owner_inter.id}")
         if owner_card_info == None:
             await inter.send(f'{config.deny} Вы не обладаете никакими картами, обратитесь в отделение банка для оформления карты.',ephemeral=True)
             return
 
         #check is invoice exists
-        invoice = base.request_one(f"SELECT * FROM `invoices` WHERE for_userid = '{inter.author.id}' AND id = '{invoice_id}' AND status != 'Оплачен'")
+        #invoice = base.request_one(f"SELECT * FROM `invoices` WHERE for_userid = '{inter.author.id}' AND id = '{invoice_id}' AND status != 'Оплачен'")
+        invoice = base.request_one(f"SELECT * FROM `invoices` WHERE id = '{invoice_id}' AND status != 'Оплачен'")
         if invoice == None:
-            invoice = base.request_one(f"SELECT * FROM `invoices` WHERE id = '{invoice_id}' AND status != 'Оплачен'")
-            if invoice == None:
-                await inter.send(f'{config.deny} Указанный вами счёт `{invoice_id}` не существует.',ephemeral=True)
-                return
+            #invoice = base.request_one(f"SELECT * FROM `invoices` WHERE id = '{invoice_id}' AND status != 'Оплачен'")
+            #if invoice == None:
+            #    await inter.send(f'{config.deny} Указанный вами счёт `{invoice_id}` не существует.',ephemeral=True)
+            #    return
             await inter.send(f'{config.deny} Указанный вами счёт `{invoice_id}` зарегистрирован не на ваш аккаунт.',ephemeral=True)
             return
         
         #get invoice info
+        owner = await self.client.fetch_user(int(invoice['for_userid']))
         amount = int(invoice['amount'])
         type = invoice['type']
         invoice_author = await self.client.fetch_user(int(invoice['from_userid']))
@@ -154,25 +156,33 @@ class PlayerCMD(commands.Cog):
             fine = base.request_one(f"SELECT id FROM fines WHERE invoice_id = '{invoice_id}'")
             fine_id = fine['id']
             notifychnl = self.client.get_channel(int(config.notifychnl))
-
-            responce_chnl = discord.Embed(description=f"### 💵 Пользователь {owner.mention} оплатил штраф `{fine_id}`",color=0x80d8ed)
+            
+            if(owner != owner_inter):
+                responce_chnl = discord.Embed(description=f"### 💵 Пользователь {owner_inter.mention} оплатил штраф `{fine_id}` игрока {owner.mention}",color=0x80d8ed)
+                responce_pm = discord.Embed(description=f"### Ваш штраф `{fine_id}` успешно оплачен игроком {owner_inter.mention} \nПриятной игры!",color=0x80d8ed)
+            else:
+                responce_chnl = discord.Embed(description=f"### 💵 Пользователь {owner.mention} оплатил штраф `{fine_id}`",color=0x80d8ed)
+                responce_pm = discord.Embed(description=f"### Ваш штраф `{fine_id}` успешно оплачен \nПриятной игры!",color=0x80d8ed)
             responce_chnl.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
             await notifychnl.send(embed=responce_chnl)
 
-            responce_pm = discord.Embed(description=f"### Ваш штраф `{fine_id}` успешно оплачен \nПриятной игры!",color=0x80d8ed)
             responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
             await owner.send(embed=responce_pm)
+        else:
+            #gen and send responce
+            if(owner != owner_inter):
+                responce_chnl_system = discord.Embed(description=f"### 💵 Пользователь {owner_inter.mention} оплатил счёт `{invoice_id}` игрока {owner.mention} \nТип счёта: `{type}`\nСумма счёта: `{amount}` алмазов \n\nСчёт оформлен банкиром {invoice_author.mention} \nДата выполнения операции: {timestamp}.",color=0x80d8ed)
+                responce_pm2 = discord.Embed(description=f"### Вас счёт `{invoice_id}` успешно оплачен \nТип счёта: `{type}`\nСумма счёта: `{amount}` алмазов \n\nСчёт оформлен банкиром {invoice_author.mention} \nДата выполнения операции: {timestamp}.",color=0x80d8ed)
+            else:
+                responce_chnl_system = discord.Embed(description=f"### 💵 Пользователь {owner_inter.mention} оплатил счёт `{invoice_id}` игрока {owner.mention} \nТип счёта: `{type}`\nСумма счёта: `{amount}` алмазов \n\nСчёт оформлен банкиром {invoice_author.mention} \nДата выполнения операции: {timestamp}.",color=0x80d8ed)
+                responce_pm2 = discord.Embed(description=f"### Вас счёт `{invoice_id}` успешно оплачен \nТип счёта: `{type}`\nСумма счёта: `{amount}` алмазов \n\nСчёт оформлен банкиром {invoice_author.mention} \nДата выполнения операции: {timestamp}.",color=0x80d8ed)
+            
+            responce_chnl_system.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
+            await logchannel.send(embed=responce_chnl_system)
 
-        #gen and send responce
+            responce_pm2.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
+            await owner.send(embed=responce_pm2)
         await inter.send(f"{config.accept} Счёт `{invoice_id}` успешно оплачен.",ephemeral=True)
-
-        responce_chnl_system = discord.Embed(description=f"### 💵 Пользователь {owner.mention} оплатил счёт `{invoice_id}` \nТип счёта: `{type}`\nСумма счёта: `{amount}` алмазов \n\nСчёт оформлен банкиром {invoice_author.mention} \nДата выполнения операции: {timestamp}.",color=0x80d8ed)
-        responce_chnl_system.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
-        await logchannel.send(embed=responce_chnl_system)
-
-        responce_pm2 = discord.Embed(description=f"### Вас счёт `{invoice_id}` успешно оплачен \nТип счёта: `{type}`\nСумма счёта: `{amount}` алмазов \n\nСчёт оформлен банкиром {invoice_author.mention} \nДата выполнения операции: {timestamp}.",color=0x80d8ed)
-        responce_pm2.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
-        await owner.send(embed=responce_pm2)
 
     @commands.slash_command(name="баланс", description="💳 Показывает баланс вашей карты или указанного пользователя", guild_ids=[921483461016031263], test_guilds=[921483461016031263])
     @commands.cooldown(1, 5, commands.BucketType.user)
