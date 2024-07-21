@@ -1,14 +1,23 @@
 import disnake as discord
+from disnake import Webhook
+import aiohttp
 import datetime
 from datetime import timezone, timedelta
 from disnake.ext import commands
 import random2
-from api.server import base, main
+from api import base
+from api import main
+from api import webhook
 from configs import config
 
 class BankerCMD(commands.Cog):
     def __init__(self, client):
-        self.client = client
+        self.client = client 
+
+    @commands.Cog.listener()
+    async def on_ready(self):
+        await self.client.change_presence(activity = discord.Activity(type = discord.ActivityType.watching, name = f"за валютой"))
+
     @commands.slash_command(name="создать-карту", description="💳 Создаёт банковскую карту на указанного пользователя", guild_ids=[921483461016031263], test_guilds=[921483461016031263])
     @commands.has_role(1197579125037207572)
     @commands.cooldown(1, 10, commands.BucketType.user)
@@ -49,7 +58,6 @@ class BankerCMD(commands.Cog):
             await inter.send(f'{config.deny} У пользователя уже есть зарегистрированная карта `FW-{card_info["id"]}`.',ephemeral=True)
             return
         
-        logchannel = self.client.get_channel(config.logschannel)
         owner = member
         banker = inter.author
         timezone_offset = +3.0
@@ -58,7 +66,7 @@ class BankerCMD(commands.Cog):
         date = str(date).split('.')
         date = date[0]
         date_format = datetime.datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
-        timestamp = datetime.datetime.timestamp(date_format)
+        timestamp = int(str(datetime.datetime.timestamp(date_format)).split('.')[0])
         timestamp = f"<t:{timestamp}:f>"
 
         #insert new card in DB
@@ -69,7 +77,7 @@ class BankerCMD(commands.Cog):
 
         responce_chnl_system = discord.Embed(description=f"### 💳 Пользователь {owner.mention} оформил карту `FW-{card_id}` \nКарту оформил банкир {banker.mention}. \nДата оформления: {timestamp}.",color=0x80D8ED)
         responce_chnl_system.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
-        await logchannel.send(embed=responce_chnl_system)
+        await webhook.logsSend(responce_chnl_system)
 
         responce_pm = discord.Embed(description=f"### Вы успешно оформили карту `FW-{card_id}` \nКарту оформил банкир {banker.mention}. \nДата оформления: {timestamp}. \n\nЕсли вы не оформляли карту, немедленно сообщите об этом в <#1187849294942842900>.",color=0x80D8ED)
         responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
@@ -97,7 +105,6 @@ class BankerCMD(commands.Cog):
             await inter.send(f'{config.deny} Карта `FW-{card_id}` не найдена. Убедитесь, что вы ввели правильный номер.',ephemeral=True)
             return
                 
-        logchannel = self.client.get_channel(config.logschannel)
         owner = await self.client.fetch_user(card_info['owner_id'])
         banker = inter.author
         timezone_offset = +3.0
@@ -115,7 +122,7 @@ class BankerCMD(commands.Cog):
 
         responce_chnl_system = discord.Embed(description=f"### 💳 Карта `FW-{card_id}` пользователя {owner.mention} удалена \nКарта удалена банкиром {banker.mention}. \n\nДата удаления: {timestamp}.",color=0x80D8ED)
         responce_chnl_system.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
-        await logchannel.send(embed=responce_chnl_system)
+        await webhook.logsSend(responce_chnl_system)
 
         responce_pm = discord.Embed(description=f"### Ваша карта `FW-{card_id}` была удалена \nКарта удалена банкиром {banker.mention}. \nДата удаления: {timestamp}. \n\nЕсли карта была удалена не по вашему заявлению - обратитесь в <#1187849294942842900>.",color=0x80D8ED)
         responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
@@ -151,7 +158,6 @@ class BankerCMD(commands.Cog):
             await inter.send(f'{config.deny} Карта `FW-{card_id}` не найдена. Убедитесь, что вы ввели правильный номер.',ephemeral=True)
             return
         
-        logchannel = self.client.get_channel(config.logschannel)
         owner = await self.client.fetch_user(card_info['owner_id'])
         banker = inter.author
         timezone_offset = +3.0
@@ -176,7 +182,7 @@ class BankerCMD(commands.Cog):
 
         responce_chnl_system = discord.Embed(description=f"### 💸 Пользователь {owner.mention} снял {sum} алмазов с карты `FW-{card_id}` \nБаланс: ~~{balance}~~ -> {new_balance} алмазов. \nТранзакция оформлена банкиром {banker.mention}. \nДата оформления транзакции: {timestamp}.",color=0x80d8ed)
         responce_chnl_system.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
-        await logchannel.send(embed=responce_chnl_system)
+        await webhook.logsSend(responce_chnl_system)
 
         responce_pm = discord.Embed(description=f"### Вы сняли {sum} алмазов с карты `FW-{card_id}` \nБаланс: ~~{balance}~~ -> {new_balance} алмазов. \nТранзакция оформлена банкиром {banker.mention}. \nДата оформления транзакции: {timestamp}.",color=0x80d8ed)
         responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
@@ -212,7 +218,6 @@ class BankerCMD(commands.Cog):
             await inter.send(f'{config.deny} Карта `FW-{card_id}` не найдена. Убедитесь, что вы ввели правильный номер.',ephemeral=True)
             return
         
-        logchannel = self.client.get_channel(config.logschannel)
         owner_id = card_info['owner_id']
         owner = await self.client.fetch_user(owner_id)
         banker = inter.author
@@ -235,7 +240,7 @@ class BankerCMD(commands.Cog):
 
         responce_chnl_system = discord.Embed(description=f"### 💸 Пользователь {owner.mention} пополнил карту `FW-{card_id}` на {sum} алмазов \nБаланс: ~~{balance}~~ -> {new_balance} алмазов. \nТранзакция оформлена банкиром {banker.mention}. \nДата оформления транзакции: {timestamp}.",color=0x80d8ed)
         responce_chnl_system.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
-        await logchannel.send(embed=responce_chnl_system)
+        await webhook.logsSend(responce_chnl_system)
 
         responce_pm = discord.Embed(description=f"### Вы пополнили карту `FW-{card_id}` на {sum} алмазов \nБаланс: ~~{balance}~~ -> {new_balance} алмазов. \nТранзакция оформлена банкиром {banker.mention}. \nДата оформления транзакции: {timestamp}.",color=0x80d8ed)
         responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
