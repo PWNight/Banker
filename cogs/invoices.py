@@ -4,7 +4,7 @@ from datetime import timezone, timedelta
 from disnake.ext import commands, tasks
 from api import base
 from api import main
-from configs import config
+from api import webhook
 import random2
 
 class Invoices(commands.Cog):
@@ -23,11 +23,9 @@ class Invoices(commands.Cog):
             cards_mass = base.request_all(f"SELECT id, owner_id FROM cards")
             for card in cards_mass:
                 await Invoices.commision_invoice(self,card)
-            logchannel = self.client.get_channel(config.logschannel)
-            responce_chnl = discord.Embed(description=f"### Выставлено {len(cards_mass)} счетов на оплату банковской комиссии \nНаступило 1-е число месяца, поэтому банковская система в автоматическом режиме выставила счета за обслуживание карт каждому клиенту.",color=0x80d8ed)
-            responce_chnl.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/emojis/1105878293187678208.webp?size=96&quality=lossless')
-            await logchannel.send(embed=responce_chnl)
-
+            logs_message = discord.Embed(description=f"### Выставлено {len(cards_mass)} счетов на оплату банковской комиссии \nНаступило 1-е число месяца, поэтому банковская система в автоматическом режиме выставила счета за обслуживание карт каждому клиенту.",color=0x80d8ed)
+            logs_message.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/emojis/1105878293187678208.webp?size=96&quality=lossless')
+            await webhook.logsSend(logs_message)
     @tasks.loop(hours = 1)
     async def invoices_check(self):
         invoices_mass = base.request_all(f"SELECT * FROM invoices WHERE status NOT IN ('Оплачен','Отменён')")
@@ -46,7 +44,6 @@ class Invoices(commands.Cog):
         new_date = date + datetime.timedelta(days=3)
         due_date = datetime.datetime.strptime(str(new_date), '%Y-%m-%d %H:%M:%S')
         
-        logchannel = self.client.get_channel(config.logschannel)
         invoice_id = invoice['id']
         invoice_user = await self.client.fetch_user(int(invoice['for_userid']))
         invoice_author = await self.client.fetch_user(int(invoice['from_userid']))
@@ -57,16 +54,15 @@ class Invoices(commands.Cog):
         base.send(f"UPDATE `invoices` SET `status` = 'Просрочен', due_date = '{due_date}' WHERE id = '{invoice_id}'")
 
         #gen msg and send
-        responce_chnl = discord.Embed(description=f"### Счёт `{invoice_id}` игрока {invoice_user.mention} просрочен \nТип счёта: `{type}` \nСумма счёта: `{amount}` алмазов \nСчёт выставил {invoice_author.mention} \n\nСчёт должен был быть оплачен до ~~`{date}`~~ -> `{new_date}`.",color=0x80d8ed)
-        responce_chnl.set_footer(text=f'{main.copyright()} | ID: {invoice_id}',icon_url=f'https://cdn.discordapp.com/emojis/1105878293187678208.webp?size=96&quality=lossless')
-        await logchannel.send(embed=responce_chnl)
+        logs_message = discord.Embed(description=f"### Счёт `{invoice_id}` игрока {invoice_user.mention} просрочен \nТип счёта: `{type}` \nСумма счёта: `{amount}` алмазов \nСчёт выставил {invoice_author.mention} \n\nСчёт должен был быть оплачен до ~~`{date}`~~ -> `{new_date}`.",color=0x80d8ed)
+        logs_message.set_footer(text=f'{main.copyright()} | ID: {invoice_id}',icon_url=f'https://cdn.discordapp.com/emojis/1105878293187678208.webp?size=96&quality=lossless')
+        await webhook.logsSend(logs_message)
 
         responce_pm = discord.Embed(description=f"### Выставленный вам счёт `{invoice_id}` просрочен \nТип счёта: `{type}` \nСумма счёта: `{amount}` алмазов \nСчёт выставил {invoice_author.mention} \n\nСчёт должен был быть оплачен до ~~`{date}`~~ -> `{new_date}`.",color=0x80d8ed)
         responce_pm.set_footer(text=f'{main.copyright()} | ID: {invoice_id}',icon_url=f'https://cdn.discordapp.com/emojis/1105878293187678208.webp?size=96&quality=lossless')
         await invoice_user.send(embed=responce_pm)
 
     async def twice_notify(self,date,invoice):
-        logchannel = self.client.get_channel(config.logschannel)
         invoice_id = invoice['id']
         invoice_user = await self.client.fetch_user(int(invoice['for_userid']))
         invoice_author = await self.client.fetch_user(int(invoice['from_userid']))
@@ -77,9 +73,9 @@ class Invoices(commands.Cog):
         base.send(f"UPDATE `invoices` SET `status` = 'Повторно просрочен' WHERE id = '{invoice_id}'")
 
         #gen msg and send
-        responce_chnl = discord.Embed(description=f"### Счёт `{invoice_id}` игрока {invoice_user.mention} повторно просрочен \nТип счёта: `{type}` \nСумма счёта: `{amount}` алмазов \nСчёт оформил {invoice_author.mention} \n\nСчёт должен был быть оплачен до `{date}`",color=0x80d8ed)
-        responce_chnl.set_footer(text=f'{main.copyright()} | ID: {invoice_id}',icon_url=f'https://cdn.discordapp.com/emojis/1105878293187678208.webp?size=96&quality=lossless')
-        await logchannel.send(embed=responce_chnl)
+        logs_message = discord.Embed(description=f"### Счёт `{invoice_id}` игрока {invoice_user.mention} повторно просрочен \nТип счёта: `{type}` \nСумма счёта: `{amount}` алмазов \nСчёт оформил {invoice_author.mention} \n\nСчёт должен был быть оплачен до `{date}`",color=0x80d8ed)
+        logs_message.set_footer(text=f'{main.copyright()} | ID: {invoice_id}',icon_url=f'https://cdn.discordapp.com/emojis/1105878293187678208.webp?size=96&quality=lossless')
+        await webhook.logsSend(logs_message)
 
         responce_pm = discord.Embed(description=f"### Ваш счёт `{invoice_id}` повторно просрочен \nТип счёта: `{type}` \nСумма счёта: `{amount}` алмазов \nСчёт оформил {invoice_author.mention} \n\nСчёт должен был быть оплачен до `{date}`",color=0x80d8ed)
         responce_pm.set_footer(text=f'{main.copyright()} | ID: {invoice_id}',icon_url=f'https://cdn.discordapp.com/emojis/1105878293187678208.webp?size=96&quality=lossless')

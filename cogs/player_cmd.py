@@ -135,12 +135,14 @@ class PlayerCMD(commands.Cog):
             return
         owner_balance -= amount
 
-        #update balance and invoice status
+        #update reciever balance and invoice status
         base.send(f"UPDATE `cards` SET `balance` = '{owner_balance}' WHERE id = '{owner_card_id}'")
-        card1_info = base.request_one(f"SELECT balance FROM `cards` WHERE id = 0001")
+        card1_info = base.request_one(f"SELECT balance FROM `cards` WHERE id = '0001'")
+
         balance = int(card1_info['balance'])
         balance += amount
-        base.send(f"UPDATE `cards` SET `balance` = '{balance}' WHERE id = 0001")
+
+        base.send(f"UPDATE `cards` SET `balance` = '{balance}' WHERE id = '0001'")
         base.send(f"UPDATE `invoices` SET `status`= 'Оплачен' WHERE id = '{invoice_id}'")
 
         timezone_offset = +3.0
