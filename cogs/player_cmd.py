@@ -2,7 +2,8 @@ import disnake as discord
 import datetime
 from datetime import timezone, timedelta
 from disnake.ext import commands
-from api.server import base, main
+from api import base
+from api import main
 from configs import config
 
 class PlayerCMD(commands.Cog):

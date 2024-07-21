@@ -2,7 +2,8 @@ import datetime
 import disnake as discord
 from datetime import timezone, timedelta
 from disnake.ext import commands, tasks
-from api.server import base, main
+from api import base
+from api import main
 from configs import config
 import random2
 
