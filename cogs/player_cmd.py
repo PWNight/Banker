@@ -142,10 +142,15 @@ class PlayerCMD(commands.Cog):
         reciever_card = base.request_one(f"SELECT * FROM cards WHERE owner_id = '{reciever_user_id}'")
         reciever_card_id = reciever_card['id']
 
-        balance = int(reciever_card['balance'])
-        balance += amount
+        goverment_card = base.request_one("SELEFT * FROM cards WHERE id = '0001'")
+        gov_balance = goverment_card['balance']
+        gov_balance += amount * (1 - 80/100)
 
-        base.send(f"UPDATE `cards` SET `balance` = '{balance}' WHERE id = '{reciever_card_id}'")
+        user_balance = int(reciever_card['balance'])
+        user_balance += amount * (1 - 20/100)
+
+        base.send(f"UPDATE `cards` SET `balance` = '{user_balance}' WHERE id = '{reciever_card_id}'")
+        base.send(f"UPDATE `cards` SET `balance` = '{gov_balance}' WHERE id = '0001'")
         base.send(f"UPDATE `invoices` SET `status`= 'Оплачен' WHERE id = '{invoice_id}'")
 
         timezone_offset = +3.0
