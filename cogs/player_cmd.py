@@ -12,7 +12,7 @@ class PlayerCMD(commands.Cog):
         self.client = client
     @commands.slash_command(name="перевести", description="💵 Переводит алмазы на указанную карту", guild_ids=[921483461016031263], test_guilds=[921483461016031263])
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def give_money(self, inter, card_id: str, sum: int):
+    async def give_money(self, inter, card_id: str, sum: int, comment: str):
         await inter.response.defer(ephemeral = True)
         #sum validation
         if(sum < 0 or sum == 0):
@@ -76,15 +76,15 @@ class PlayerCMD(commands.Cog):
         #gen and send responce
         await inter.send(f"{config.accept} 💸 Вы перевели {sum} алмазов на карту `FW-{card_id}`.",ephemeral=True)
 
-        logs_message = discord.Embed(description=f"### 💸 Пользователь {owner.mention} перевёл пользователю {reciever.mention} {sum} алмазов \nКарта владельца: `FW-{owner_card_id}`. \nКарта получателя: `FW-{card_id}`. \n\nДата оформления транзакции: {timestamp}.",color=0xEFAF6F)
+        logs_message = discord.Embed(description=f"### 💸 Пользователь {owner.mention} перевёл пользователю {reciever.mention} {sum} алмазов \nКарта владельца: `FW-{owner_card_id}`. \nКарта получателя: `FW-{card_id}`. \n\nДата оформления транзакции: {timestamp}. \nКомментарий к операции: `{comment}`.",color=0xEFAF6F)
         logs_message.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await webhook.logsSend(logs_message)
 
-        responce_owner_pm = discord.Embed(description=f"### Вы перевели {sum} алмазов на карту `FW-{card_id}` \nДата оформления транзакции: {timestamp}.",color=0xEFAF6F)
+        responce_owner_pm = discord.Embed(description=f"### Вы перевели {sum} алмазов на карту `FW-{card_id}` \nДата оформления транзакции: {timestamp}. \nКомментарий к операции: `{comment}`.",color=0xEFAF6F)
         responce_owner_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await owner.send(embed=responce_owner_pm)
 
-        responce_reciever_pm = discord.Embed(description=f"### Вы получили {sum} алмазов на карту `FW-{card_id}` \nПеревод поступил от {owner.mention} (`FW-{owner_card_id}`) \nДата оформления транзакции: {timestamp}.",color=0xEFAF6F)
+        responce_reciever_pm = discord.Embed(description=f"### Вы получили {sum} алмазов на карту `FW-{card_id}` \nПеревод поступил от {owner.mention} (`FW-{owner_card_id}`) \nДата оформления транзакции: {timestamp}. \nКомментарий к операции: `{comment}`.",color=0xEFAF6F)
         responce_reciever_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await reciever.send(embed=responce_reciever_pm)
         
