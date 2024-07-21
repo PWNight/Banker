@@ -4,6 +4,7 @@ from datetime import timezone, timedelta
 from disnake.ext import commands
 from api import base
 from api import main
+from api import webhook
 from configs import config
 
 class PlayerCMD(commands.Cog):
@@ -49,7 +50,6 @@ class PlayerCMD(commands.Cog):
             await inter.send(f'{config.deny} Вы не можете перевести алмазы самому себе.',ephemeral=True)
             return
         
-        logchannel = self.client.get_channel(config.logschannel)
         owner = await self.client.fetch_user(int(owner_id))
         owner_card_id = owner_card_info['id']
         reciever = await self.client.fetch_user(int(reciever_id))
@@ -76,9 +76,9 @@ class PlayerCMD(commands.Cog):
         #gen and send responce
         await inter.send(f"{config.accept} 💸 Вы перевели {sum} алмазов на карту `FW-{card_id}`.",ephemeral=True)
 
-        responce_chnl_system = discord.Embed(description=f"### 💸 Пользователь {owner.mention} перевёл пользователю {reciever.mention} {sum} алмазов \nКарта владельца: `FW-{owner_card_id}`. \nКарта получателя: `FW-{card_id}`. \n\nДата оформления транзакции: {timestamp}.",color=0xEFAF6F)
-        responce_chnl_system.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
-        await logchannel.send(embed=responce_chnl_system)
+        logs_message = discord.Embed(description=f"### 💸 Пользователь {owner.mention} перевёл пользователю {reciever.mention} {sum} алмазов \nКарта владельца: `FW-{owner_card_id}`. \nКарта получателя: `FW-{card_id}`. \n\nДата оформления транзакции: {timestamp}.",color=0xEFAF6F)
+        logs_message.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
+        await webhook.logsSend(logs_message)
 
         responce_owner_pm = discord.Embed(description=f"### Вы перевели {sum} алмазов на карту `FW-{card_id}` \nДата оформления транзакции: {timestamp}.",color=0xEFAF6F)
         responce_owner_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
@@ -143,7 +143,6 @@ class PlayerCMD(commands.Cog):
         base.send(f"UPDATE `cards` SET `balance` = '{balance}' WHERE id = 0001")
         base.send(f"UPDATE `invoices` SET `status`= 'Оплачен' WHERE id = '{invoice_id}'")
 
-        logchannel = self.client.get_channel(int(config.logschannel))
         timezone_offset = +3.0
         tzinfo = timezone(timedelta(hours=timezone_offset))
         date = str(datetime.datetime.now(tzinfo)).split('.')[0]
@@ -156,30 +155,29 @@ class PlayerCMD(commands.Cog):
             base.send(f"UPDATE fines SET status = 'Оплачен' WHERE invoice_id = '{invoice_id}'")
             fine = base.request_one(f"SELECT id FROM fines WHERE invoice_id = '{invoice_id}'")
             fine_id = fine['id']
-            notifychnl = self.client.get_channel(int(config.notifychnl))
             
             if(owner != owner_inter):
-                responce_chnl = discord.Embed(description=f"### 💵 Пользователь {owner_inter.mention} оплатил штраф `{fine_id}` игрока {owner.mention}",color=0x80d8ed)
+                notion_message = discord.Embed(description=f"### 💵 Пользователь {owner_inter.mention} оплатил штраф `{fine_id}` игрока {owner.mention}",color=0x80d8ed)
                 responce_pm = discord.Embed(description=f"### Ваш штраф `{fine_id}` успешно оплачен игроком {owner_inter.mention} \nПриятной игры!",color=0x80d8ed)
             else:
-                responce_chnl = discord.Embed(description=f"### 💵 Пользователь {owner.mention} оплатил штраф `{fine_id}`",color=0x80d8ed)
+                notion_message = discord.Embed(description=f"### 💵 Пользователь {owner.mention} оплатил штраф `{fine_id}`",color=0x80d8ed)
                 responce_pm = discord.Embed(description=f"### Ваш штраф `{fine_id}` успешно оплачен \nПриятной игры!",color=0x80d8ed)
-            responce_chnl.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
-            await notifychnl.send(embed=responce_chnl)
+            notion_message.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
+            await webhook.notionSend.send(notion_message)
 
             responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
             await owner.send(embed=responce_pm)
         else:
             #gen and send responce
             if(owner != owner_inter):
-                responce_chnl_system = discord.Embed(description=f"### 💵 Пользователь {owner_inter.mention} оплатил счёт `{invoice_id}` игрока {owner.mention} \nТип счёта: `{type}`\nСумма счёта: `{amount}` алмазов \n\nСчёт оформлен банкиром {invoice_author.mention} \nДата выполнения операции: {timestamp}.",color=0x80d8ed)
+                logs_message = discord.Embed(description=f"### 💵 Пользователь {owner_inter.mention} оплатил счёт `{invoice_id}` игрока {owner.mention} \nТип счёта: `{type}`\nСумма счёта: `{amount}` алмазов \n\nСчёт оформлен банкиром {invoice_author.mention} \nДата выполнения операции: {timestamp}.",color=0x80d8ed)
                 responce_pm2 = discord.Embed(description=f"### Вас счёт `{invoice_id}` успешно оплачен \nТип счёта: `{type}`\nСумма счёта: `{amount}` алмазов \n\nСчёт оформлен банкиром {invoice_author.mention} \nДата выполнения операции: {timestamp}.",color=0x80d8ed)
             else:
-                responce_chnl_system = discord.Embed(description=f"### 💵 Пользователь {owner_inter.mention} оплатил счёт `{invoice_id}` игрока {owner.mention} \nТип счёта: `{type}`\nСумма счёта: `{amount}` алмазов \n\nСчёт оформлен банкиром {invoice_author.mention} \nДата выполнения операции: {timestamp}.",color=0x80d8ed)
+                logs_message = discord.Embed(description=f"### 💵 Пользователь {owner_inter.mention} оплатил счёт `{invoice_id}` игрока {owner.mention} \nТип счёта: `{type}`\nСумма счёта: `{amount}` алмазов \n\nСчёт оформлен банкиром {invoice_author.mention} \nДата выполнения операции: {timestamp}.",color=0x80d8ed)
                 responce_pm2 = discord.Embed(description=f"### Вас счёт `{invoice_id}` успешно оплачен \nТип счёта: `{type}`\nСумма счёта: `{amount}` алмазов \n\nСчёт оформлен банкиром {invoice_author.mention} \nДата выполнения операции: {timestamp}.",color=0x80d8ed)
             
-            responce_chnl_system.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
-            await logchannel.send(embed=responce_chnl_system)
+            logs_message.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
+            await webhook.logsSend(logs_message)
 
             responce_pm2.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
             await owner.send(embed=responce_pm2)
