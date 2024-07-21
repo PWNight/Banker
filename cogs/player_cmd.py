@@ -34,9 +34,9 @@ class PlayerCMD(commands.Cog):
         card_id = int(card_id)
         
         #get cards info by inter id and card id
-        owner_card_info = base.request_one(f"SELECT * FROM `cards` WHERE owner_id = {inter.author.id}")
+        owner_card = base.request_one(f"SELECT * FROM `cards` WHERE owner_id = {inter.author.id}")
         reciever_card_info = base.request_one(f"SELECT * FROM `cards` WHERE id = {card_id}")
-        if owner_card_info == None:
+        if owner_card == None:
             await inter.send(f'{config.deny} На ваше имя нету зарегистрированных карт, обратитесь в отделение банка для оформления карты.',ephemeral=True)
             return
         if reciever_card_info == None:
@@ -44,14 +44,14 @@ class PlayerCMD(commands.Cog):
             return
         
         #check users id
-        owner_id = owner_card_info['owner_id']
+        owner_id = owner_card['owner_id']
         reciever_id = reciever_card_info['owner_id']
         if(owner_id == reciever_id):
             await inter.send(f'{config.deny} Вы не можете перевести алмазы самому себе.',ephemeral=True)
             return
         
         owner = await self.client.fetch_user(int(owner_id))
-        owner_card_id = owner_card_info['id']
+        owner_card_id = owner_card['id']
         reciever = await self.client.fetch_user(int(reciever_id))
         timezone_offset = +3.0
         tzinfo = timezone(timedelta(hours=timezone_offset))
@@ -61,7 +61,7 @@ class PlayerCMD(commands.Cog):
         timestamp = f"<t:{timestamp}:f>"
 
         #get and calc new balance
-        owner_balance = int(owner_card_info['balance'])
+        owner_balance = int(owner_card['balance'])
         reciever_balance = int(reciever_card_info['balance'])
         if owner_balance < sum:
             await inter.send(f'{config.deny} На карте `FW-{owner_card_id}` недостаточно средств (Баланс: `{owner_balance}` алмазов, а снимается `{sum}` алмазов).',ephemeral=True)
@@ -105,8 +105,8 @@ class PlayerCMD(commands.Cog):
 
         #get owner card info
         owner_inter = inter.author
-        owner_card_info = base.request_one(f"SELECT * FROM `cards` WHERE owner_id = {owner_inter.id}")
-        if owner_card_info == None:
+        owner_card = base.request_one(f"SELECT * FROM `cards` WHERE owner_id = {owner_inter.id}")
+        if owner_card == None:
             await inter.send(f'{config.deny} Вы не обладаете никакими картами, обратитесь в отделение банка для оформления карты.',ephemeral=True)
             return
 
@@ -128,8 +128,8 @@ class PlayerCMD(commands.Cog):
         invoice_author = await self.client.fetch_user(int(invoice['from_userid']))
 
         #get card id, balance and calc new balance
-        owner_card_id = int(owner_card_info['id'])
-        owner_balance = int(owner_card_info['balance'])
+        owner_card_id = int(owner_card['id'])
+        owner_balance = int(owner_card['balance'])
         if owner_balance < amount:
             await inter.send(f"{config.deny} На карте `FW-{owner_card_id}` недостаточно средств (Баланс: `{owner_balance}` алмазов, а для оплаты нужно `{amount}` алмазов).",ephemeral=True)
             return
@@ -137,12 +137,15 @@ class PlayerCMD(commands.Cog):
 
         #update reciever balance and invoice status
         base.send(f"UPDATE `cards` SET `balance` = '{owner_balance}' WHERE id = '{owner_card_id}'")
-        card1_info = base.request_one(f"SELECT balance FROM `cards` WHERE id = '0001'")
 
-        balance = int(card1_info['balance'])
+        reciever_user_id = int(invoice['to_userid'])
+        reciever_card = base.request_one(f"SELECT * FROM cards WHERE owner_id = '{reciever_user_id}'")
+        reciever_card_id = reciever_card['id']
+
+        balance = int(reciever_card['balance'])
         balance += amount
 
-        base.send(f"UPDATE `cards` SET `balance` = '{balance}' WHERE id = '0001'")
+        base.send(f"UPDATE `cards` SET `balance` = '{balance}' WHERE id = '{reciever_card_id}'")
         base.send(f"UPDATE `invoices` SET `status`= 'Оплачен' WHERE id = '{invoice_id}'")
 
         timezone_offset = +3.0
