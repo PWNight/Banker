@@ -14,10 +14,6 @@ class BankerCMD(commands.Cog):
     def __init__(self, client):
         self.client = client 
 
-    @commands.Cog.listener()
-    async def on_ready(self):
-        await self.client.change_presence(activity = discord.Activity(type = discord.ActivityType.watching, name = f"за валютой"))
-
     @commands.slash_command(name="создать-карту", description="💳 Создаёт банковскую карту на указанного пользователя", guild_ids=[921483461016031263], test_guilds=[921483461016031263])
     @commands.has_role(1197579125037207572)
     @commands.cooldown(1, 10, commands.BucketType.user)
