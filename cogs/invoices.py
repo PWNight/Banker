@@ -14,7 +14,7 @@ class Invoices(commands.Cog):
     async def on_ready(self):
         await self.client.change_presence(activity = discord.Activity(type = discord.ActivityType.watching, name = f"за штрафами"))
         self.invoices_check.start()
-        self.bankday_check.start()
+        #self.bankday_check.start()
 
     #TODO: Реализовать блокировку карты при недостаточном балансе
     #@tasks.loop(hours=24)

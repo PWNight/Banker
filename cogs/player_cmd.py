@@ -132,18 +132,24 @@ class PlayerCMD(commands.Cog):
         #update reciever balance and invoice status
         base.send(f"UPDATE `cards` SET `balance` = '{owner_balance}' WHERE id = '{owner_card_id}'")
 
-        reciever_user_id = int(invoice['to_userid'])
-        reciever_card = base.request_one(f"SELECT * FROM cards WHERE owner_id = '{reciever_user_id}'")
-        reciever_card_id = reciever_card['id']
-
+        #get goverment balance
         goverment_card = base.request_one("SELEFT * FROM cards WHERE id = '0001'")
         gov_balance = goverment_card['balance']
-        gov_balance += amount * (1 - 80/100)
 
-        user_balance = int(reciever_card['balance'])
-        user_balance += amount * (1 - 20/100)
+        #check reciever
+        reciever_user_id = int(invoice['to_userid'])
+        if(reciever_user_id != 1195315985532604506):
+            reciever_card = base.request_one(f"SELECT * FROM cards WHERE owner_id = '{reciever_user_id}'")
+            reciever_card_id = reciever_card['id']
 
-        base.send(f"UPDATE `cards` SET `balance` = '{user_balance}' WHERE id = '{reciever_card_id}'")
+            user_balance = int(reciever_card['balance'])
+            gov_balance += amount * (1 - 80/100)
+            user_balance += amount * (1 - 20/100)
+
+            base.send(f"UPDATE `cards` SET `balance` = '{user_balance}' WHERE id = '{reciever_card_id}'")
+        else:
+            gov_balance += amount
+
         base.send(f"UPDATE `cards` SET `balance` = '{gov_balance}' WHERE id = '0001'")
         base.send(f"UPDATE `invoices` SET `status`= 'Оплачен' WHERE id = '{invoice_id}'")
 
