@@ -15,18 +15,21 @@ class Invoices(commands.Cog):
         await self.client.change_presence(activity = discord.Activity(type = discord.ActivityType.watching, name = f"за штрафами"))
         self.invoices_check.start()
         self.bankday_check.start()
-    @tasks.loop(hours=24)
-    async def bankday_check(self):
-        curr_date = datetime.datetime.now()
-        curr_day = curr_date.day
-        if(curr_day == 1):
-            cards_mass = base.request_all(f"SELECT id, owner_id FROM cards")
-            for card in cards_mass:
-                await Invoices.commision_invoice(self,card)
-            logs_message = discord.Embed(description=f"### Выставлено {len(cards_mass)} счетов на оплату банковской комиссии \nНаступило 1-е число месяца, поэтому банковская система в автоматическом режиме выставила счета за обслуживание карт каждому клиенту.",color=0x80d8ed)
-            logs_message.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/emojis/1105878293187678208.webp?size=96&quality=lossless')
-            await webhook.logsSend(logs_message)
-    @tasks.loop(hours = 1)
+
+    #TODO: Реализовать блокировку карты при недостаточном балансе
+    #@tasks.loop(hours=24)
+    #async def bankday_check(self):
+    #    curr_date = datetime.datetime.now()
+    #    curr_day = curr_date.day
+    #    if(curr_day == 1):
+    #        cards_mass = base.request_all(f"SELECT id, owner_id FROM cards")
+    #        for card in cards_mass:
+    #            await Invoices.commision_invoice(self,card)
+    #        logs_message = discord.Embed(description=f"### Выставлено {len(cards_mass)} счетов на оплату банковской комиссии \nНаступило 1-е число месяца, поэтому банковская система в автоматическом режиме выставила счета за обслуживание карт каждому клиенту.",color=0x80d8ed)
+    #        logs_message.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/emojis/1105878293187678208.webp?size=96&quality=lossless')
+    #        await webhook.logsSend(logs_message)
+
+    @tasks.loop(minutes = 5)
     async def invoices_check(self):
         invoices_mass = base.request_all(f"SELECT * FROM invoices WHERE status NOT IN ('Оплачен','Отменён')")
         for invoice in invoices_mass:
@@ -44,6 +47,7 @@ class Invoices(commands.Cog):
         new_date = date + datetime.timedelta(days=3)
         due_date = datetime.datetime.strptime(str(new_date), '%Y-%m-%d %H:%M:%S')
         
+        #get invoice info
         invoice_id = invoice['id']
         invoice_user = await self.client.fetch_user(int(invoice['for_userid']))
         invoice_author = await self.client.fetch_user(int(invoice['from_userid']))
