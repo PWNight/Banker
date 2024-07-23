@@ -110,9 +110,16 @@ class PlayerCMD(commands.Cog):
             return
 
         #check is invoice exists
-        invoice = base.request_one(f"SELECT * FROM `invoices` WHERE id = '{invoice_id}' AND status != 'Оплачен'")
+        invoice = base.request_one(f"SELECT * FROM `invoices` WHERE id = '{invoice_id}' AND status NOT IN ('Оплачен','Отменён')")
         if invoice == None:
-            await inter.send(f'{config.deny} Указанный вами счёт `{invoice_id}` не существует.',ephemeral=True)
+            invoice = base.request_one(f"SELECT * FROM fines WHERE id = '{invoice_id}'")
+            if invoice == None:
+                await inter.send(f'{config.deny} Счёт `{invoice_id}` не найден.', ephemeral=True)
+            else:
+                if invoice['status'] == 'Оплачен':
+                    await inter.send(f'{config.deny} Счёт `{invoice_id}` уже оплачен.', ephemeral=True)
+                else:
+                    await inter.send(f'{config.deny} Счёт `{invoice_id}` уже отменён.', ephemeral=True)
             return
         
         #get invoice info

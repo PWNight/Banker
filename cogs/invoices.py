@@ -85,55 +85,55 @@ class Invoices(commands.Cog):
         responce_pm.set_footer(text=f'{main.copyright()} | ID: {invoice_id}',icon_url=f'https://cdn.discordapp.com/emojis/1105878293187678208.webp?size=96&quality=lossless')
         await invoice_user.send(embed=responce_pm)
 
-    async def commision_invoice(self,card):
-        #func gen card and validate card id (example: 0011)
-        def gen_id():
-            random_int = random2.randint(1,999999)
-            random_int = str(random_int)
-            if len(random_int) == 1:
-                random_int = '00000' + random_int
-            if len(random_int) == 2:
-                random_int = '0000' + random_int
-            if len(random_int) == 3:
-                random_int = '000' + random_int
-            if len(random_int) == 4:
-                random_int = '00' + random_int
-            if len(random_int) == 5:
-                random_int = '0' + random_int
-            return random_int
-        
-        async def validate_id():
-            invoice_id = gen_id()
-            print(invoice_id)
-            is_card_exists = base.request_one(f"SELECT * FROM `invoices` WHERE id = '{invoice_id}'")
-            if is_card_exists != None:
-                validate_id()
-            else:
-                return invoice_id
-            
-        #calc new due_date for invoice
-        timezone_offset = +3.0
-        tzinfo = timezone(timedelta(hours=timezone_offset))
-        curr_date = datetime.datetime.now(tzinfo)
-        new_date = curr_date + datetime.timedelta(days=30)
-        new_date = str(new_date).split('.')
-        new_date = new_date[0]
-        new_date = datetime.datetime.strptime(new_date, '%Y-%m-%d %H:%M:%S')
-        
-        invoice_id = await validate_id()
-        invoice_userid = card['owner_id']
-        invoice_user = await self.client.fetch_user(int(invoice_userid))
-        invoice_authorid = 1195315985532604506
-        amount = 10
-        type = 'Банковская комиссия'
-
-        #update invoice status
-        base.send(f"INSERT INTO invoices(id,type,for_userid,from_userid,to_userid,amount,due_date,status) VALUES('{invoice_id}','{type}','{invoice_userid}','{invoice_authorid}','1195315985532604506',{amount},'{new_date}','Не оплачен')")
-
-        #gen msg and send
-        responce_pm = discord.Embed(description=f"### Вам выставлен счёт `{invoice_id}` суммов в {amount} алмазов на оплату банковской комиссии \nКаждое 1-е число месяца банковская система автоматически выставляет счета за обслуживание карт каждому клиенту. \nОплатить счёт можно по команде `/оплатить-счёт [номер-счёта]`",color=0x80d8ed)
-        responce_pm.set_footer(text=f'{main.copyright()} | ID: {invoice_id}',icon_url=f'https://cdn.discordapp.com/emojis/1105878293187678208.webp?size=96&quality=lossless')
-        await invoice_user.send(embed=responce_pm)
-         
+    #async def commision_invoice(self,card):
+    #    #func gen card and validate card id (example: 0011)
+    #    def gen_id():
+    #        random_int = random2.randint(1,999999)
+    #        random_int = str(random_int)
+    #        if len(random_int) == 1:
+    #            random_int = '00000' + random_int
+    #        if len(random_int) == 2:
+    #            random_int = '0000' + random_int
+    #        if len(random_int) == 3:
+    #            random_int = '000' + random_int
+    #        if len(random_int) == 4:
+    #            random_int = '00' + random_int
+    #        if len(random_int) == 5:
+    #            random_int = '0' + random_int
+    #        return random_int
+    #    
+    #    async def validate_id():
+    #        invoice_id = gen_id()
+    #        print(invoice_id)
+    #        is_card_exists = base.request_one(f"SELECT * FROM `invoices` WHERE id = '{invoice_id}'")
+    #        if is_card_exists != None:
+    #            validate_id()
+    #        else:
+    #            return invoice_id
+    #        
+    #    #calc new due_date for invoice
+    #    timezone_offset = +3.0
+    #    tzinfo = timezone(timedelta(hours=timezone_offset))
+    #    curr_date = datetime.datetime.now(tzinfo)
+    #    new_date = curr_date + datetime.timedelta(days=30)
+    #    new_date = str(new_date).split('.')
+    #    new_date = new_date[0]
+    #    new_date = datetime.datetime.strptime(new_date, '%Y-%m-%d %H:%M:%S')
+    #    
+    #    invoice_id = await validate_id()
+    #    invoice_userid = card['owner_id']
+    #    invoice_user = await self.client.fetch_user(int(invoice_userid))
+    #    invoice_authorid = 1195315985532604506
+    #    amount = 10
+    #    type = 'Банковская комиссия'
+    #
+    #    #update invoice status
+    #    base.send(f"INSERT INTO invoices(id,type,for_userid,from_userid,to_userid,amount,due_date,status) VALUES('{invoice_id}','{type}','{invoice_userid}','{invoice_authorid}','1195315985532604506',{amount},'{new_date}','Не оплачен')")
+    #
+    #    #gen msg and send
+    #    responce_pm = discord.Embed(description=f"### Вам выставлен счёт `{invoice_id}` суммов в {amount} алмазов на оплату банковской комиссии \nКаждое 1-е число месяца банковская система автоматически выставляет счета за обслуживание карт каждому клиенту. \nОплатить счёт можно по команде `/оплатить-счёт [номер-счёта]`",color=0x80d8ed)
+    #    responce_pm.set_footer(text=f'{main.copyright()} | ID: {invoice_id}',icon_url=f'https://cdn.discordapp.com/emojis/1105878293187678208.webp?size=96&quality=lossless')
+    #    await invoice_user.send(embed=responce_pm)
+    #     
 def setup(client):
     client.add_cog(Invoices(client))
