@@ -15,7 +15,7 @@ class BankerCMD(commands.Cog):
         self.client = client 
 
     @commands.slash_command(name="создать-карту", description="💳 Создаёт банковскую карту на указанного пользователя", guild_ids=[921483461016031263], test_guilds=[921483461016031263])
-    @commands.has_role(1174535388531015752)
+    @commands.has_role(1219227957973876736)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def create_card(self, inter, member: discord.Member, comment: str):
         await inter.response.defer(ephemeral = True)
@@ -80,7 +80,7 @@ class BankerCMD(commands.Cog):
         await owner.send(embed=responce_pm)
 
     @commands.slash_command(name="удалить-карту", description="💳 Удаляет указанную банковскую карту", guild_ids=[921483461016031263], test_guilds=[921483461016031263])
-    @commands.has_role(1174535388531015752)
+    @commands.has_role(1219227957973876736)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def delete_card(self, inter, card_id: str, comment: str):
         await inter.response.defer(ephemeral = True)
@@ -125,7 +125,7 @@ class BankerCMD(commands.Cog):
         await owner.send(embed=responce_pm)
     
     @commands.slash_command(name="снять-алмазы", description="💸 Снимает алмазы с указанной карты", guild_ids=[921483461016031263], test_guilds=[921483461016031263])
-    @commands.has_role(1174535388531015752)
+    @commands.has_role(1219227957973876736)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def take_money(self, inter, card_id: str, sum: int, comment: str):
         await inter.response.defer(ephemeral = True)
@@ -185,7 +185,7 @@ class BankerCMD(commands.Cog):
         await owner.send(embed=responce_pm)
         
     @commands.slash_command(name="пополнить-карту", description="💸 Пополняет карту пользователя", guild_ids=[921483461016031263], test_guilds=[921483461016031263])
-    @commands.has_role(1174535388531015752)
+    @commands.has_role(1219227957973876736)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def grant_money(self, inter, card_id: str, sum: int, comment: str):
         await inter.response.defer(ephemeral = True)

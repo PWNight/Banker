@@ -112,7 +112,7 @@ class PlayerCMD(commands.Cog):
         #check is invoice exists
         invoice = base.request_one(f"SELECT * FROM `invoices` WHERE id = '{invoice_id}' AND status NOT IN ('Оплачен','Отменён')")
         if invoice == None:
-            invoice = base.request_one(f"SELECT * FROM fines WHERE id = '{invoice_id}'")
+            invoice = base.request_one(f"SELECT * FROM `invoices` WHERE id = '{invoice_id}'")
             if invoice == None:
                 await inter.send(f'{config.deny} Счёт `{invoice_id}` не найден.', ephemeral=True)
             else:
@@ -140,7 +140,7 @@ class PlayerCMD(commands.Cog):
         base.send(f"UPDATE `cards` SET `balance` = '{owner_balance}' WHERE id = '{owner_card_id}'")
 
         #get goverment balance
-        goverment_card = base.request_one("SELEFT * FROM cards WHERE id = '0001'")
+        goverment_card = base.request_one("SELECT * FROM cards WHERE id = '0001'")
         gov_balance = goverment_card['balance']
 
         #check reciever
@@ -173,19 +173,12 @@ class PlayerCMD(commands.Cog):
             base.send(f"UPDATE fines SET status = 'Оплачен' WHERE invoice_id = '{invoice_id}'")
 
             #get fine info and message
-            fine = base.request_one(f"SELECT id FROM fines WHERE invoice_id = '{invoice_id}'")
+            fine = base.request_one(f"SELECT id,message_id FROM fines WHERE invoice_id = '{invoice_id}'")
             fine_id = fine['id']
 
             msg_id = fine['message_id']
             msg = await webhook.notifyGet(msg_id)
             msg_embed = msg.embeds[0]
-
-            #get timestamp
-            tzinfo = timezone(timedelta(hours=3))
-            date = str(datetime.datetime.now(tzinfo)).split('.')[0]
-            date = datetime.datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
-            timestamp = str(datetime.datetime.timestamp(timestamp)).split('.')[0]
-            timestamp = f"<t:{timestamp}:f>"
             
             #edit message and send user
             if(owner != inter.author):
