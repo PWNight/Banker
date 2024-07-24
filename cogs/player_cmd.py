@@ -73,9 +73,6 @@ class PlayerCMD(commands.Cog):
         base.send(f"UPDATE `cards` SET `balance` = {owner_balance} WHERE id = {owner_card_id}")
         base.send(f"UPDATE `cards` SET `balance` = {reciever_balance} WHERE id = {card_id}")
 
-        #gen and send responce
-        await inter.send(f"{config.accept} 💸 Вы перевели {sum} алмазов на карту `FW-{card_id}`.",ephemeral=True)
-
         logs_message = discord.Embed(description=f"### 💸 Пользователь {owner.mention} перевёл пользователю {reciever.mention} {sum} алмазов \nКарта владельца: `FW-{owner_card_id}`. \nКарта получателя: `FW-{card_id}`. \n\nДата оформления транзакции: {timestamp}. \nКомментарий к операции: `{comment}`.",color=0xEFAF6F)
         logs_message.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await webhook.logsSend(logs_message)
@@ -87,6 +84,9 @@ class PlayerCMD(commands.Cog):
         responce_reciever_pm = discord.Embed(description=f"### Вы получили {sum} алмазов на карту `FW-{card_id}` \nПеревод поступил от {owner.mention} (`FW-{owner_card_id}`) \nДата оформления транзакции: {timestamp}. \nКомментарий к операции: `{comment}`.",color=0xEFAF6F)
         responce_reciever_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await reciever.send(embed=responce_reciever_pm)
+
+        #gen and send responce
+        await inter.send(f"{config.accept} 💸 Вы перевели {sum} алмазов на карту `FW-{card_id}`.",ephemeral=True)
         
     @commands.slash_command(name="оплатить-счёт", description="💵 Оплачивает указанный счёт", guild_ids=[921483461016031263], test_guilds=[921483461016031263])
     @commands.cooldown(1,10, commands.BucketType.user)
@@ -249,7 +249,6 @@ class PlayerCMD(commands.Cog):
             card_opendate = x['date_open']
             banker = await self.client.fetch_user(int(x['banker_id']))
             responce.add_field(inline=False, name=f'Карта `FW-{card_id}`', value=f"Баланс: `{card_balance}`. \nОформлена банкиром {banker.mention}. \nДата оформления: `{card_opendate}`")
-
         await inter.send(embed=responce, ephemeral=True)
                 
 def setup(client):
