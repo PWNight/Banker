@@ -43,6 +43,20 @@ class Invoices(commands.Cog):
         #update invoice status
         base.send(f"UPDATE `invoices` SET `status` = 'Просрочен', due_date = '{due_date}' WHERE id = '{invoice_id}'")
 
+        #edit fine message
+        if type == 'Штраф':
+            #get fine
+            fine = base.request_one(f"SELECT * FROM fines WHERE invoice_id = '{invoice_id}'")
+
+            #get message
+            msg_id = fine['message_id']
+            msg = await webhook.notifyGet(msg_id)
+            msg_embed = msg.embeds[0]
+
+            #edit message
+            msg_embed.description = f"~~{msg_embed.description}~~ \n\n**Штраф просрочен. \nШтраф должен быть оплачен до {new_date}**"
+            await webhook.notifyEdit(id=msg_id, message=msg_embed)
+
         #gen msg and send
         logs_message = discord.Embed(description=f"### Счёт `{invoice_id}` игрока {invoice_user.mention} просрочен \nТип счёта: `{type}` \nСумма счёта: `{amount}` алмазов \nСчёт выставил {invoice_author.mention} \n\nСчёт должен был быть оплачен до ~~`{date}`~~ -> `{new_date}`.",color=0x80d8ed)
         logs_message.set_footer(text=f'{main.copyright()} | ID: {invoice_id}',icon_url=f'https://cdn.discordapp.com/emojis/1105878293187678208.webp?size=96&quality=lossless')
@@ -61,6 +75,21 @@ class Invoices(commands.Cog):
 
         #update invoice status
         base.send(f"UPDATE `invoices` SET `status` = 'Повторно просрочен' WHERE id = '{invoice_id}'")
+
+        #edit fine message
+        if type == 'Штраф':
+            #get fine
+            fine = base.request_one(f"SELECT * FROM fines WHERE invoice_id = '{invoice_id}'")
+
+            #get message
+            msg_id = fine['message_id']
+            msg = await webhook.notifyGet(msg_id)
+            msg_embed = msg.embeds[0]
+
+            #edit message
+            msg_embed.description = msg_embed.description.replace("**","~~")
+            msg_embed.description = f"{msg_embed.description} \n**Штраф повторно просрочен.**"
+            await webhook.notifyEdit(id=msg_id, message=msg_embed)
 
         #gen msg and send
         logs_message = discord.Embed(description=f"### Счёт `{invoice_id}` игрока {invoice_user.mention} повторно просрочен \nТип счёта: `{type}` \nСумма счёта: `{amount}` алмазов \nСчёт оформил {invoice_author.mention} \n\nСчёт должен был быть оплачен до `{date}`",color=0x80d8ed)
