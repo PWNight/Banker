@@ -126,7 +126,6 @@ class PlayerCMD(commands.Cog):
         owner = await self.client.fetch_user(int(invoice['for_userid']))
         amount = int(invoice['amount'])
         type = invoice['type']
-        invoice_author = await self.client.fetch_user(int(invoice['from_userid']))
 
         #get card id, balance and calc new balance
         owner_card_id = int(owner_card['id'])
@@ -196,20 +195,19 @@ class PlayerCMD(commands.Cog):
             msg = await webhook.notifyGet(msg_id)
             msg_embed = msg.embeds[0]
 
-            #edit fine message
-            msg_embed.description = msg_embed.description.replace("**","~~")
-            msg_embed.description = f"{msg_embed.description} \n\n**Штраф оплачен.** \nДата оплаты: {timestamp}"
-            await webhook.notifyEdit(msg_id,msg_embed)
-
             #prepare message to user
             responce_pm = discord.Embed(color=0x80d8ed)
             responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
 
-            #send message to user
+            #edit fine message and send message to user
+            msg_embed.description = msg_embed.description.replace("**","~~")
             if(owner != inter.author):
+                msg_embed.description = f"{msg_embed.description} \n\n**Штраф оплачен игроком {inter.author.mention}.** \nДата оплаты: {timestamp}"
                 responce_pm.description = f"### Ваш штраф `{fine_id}` оплачен игроком {inter.author.mention} \nПриятной игры!"
             else:
+                msg_embed.description = f"{msg_embed.description} \n\n**Штраф оплачен.** \nДата оплаты: {timestamp}"
                 responce_pm.description = f"### Ваш штраф `{fine_id}` успешно оплачен \nПриятной игры!"
+            await webhook.notifyEdit(msg_id,msg_embed)
             await owner.send(embed=responce_pm)
         else:
             pass
