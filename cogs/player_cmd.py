@@ -138,73 +138,82 @@ class PlayerCMD(commands.Cog):
 
         #update reciever balance and invoice status
         base.send(f"UPDATE `cards` SET `balance` = '{owner_balance}' WHERE id = '{owner_card_id}'")
-
-        #get goverment balance
-        goverment_card = base.request_one("SELECT * FROM cards WHERE id = '0001'")
-        gov_balance = goverment_card['balance']
-
-        #check reciever
-        reciever_user_id = int(invoice['to_userid'])
-        if(reciever_user_id != 1195315985532604506):
-            reciever_card = base.request_one(f"SELECT * FROM cards WHERE owner_id = '{reciever_user_id}'")
-            reciever_card_id = reciever_card['id']
-
-            user_balance = int(reciever_card['balance'])
-            gov_balance += amount * (1 - 80/100)
-            user_balance += amount * (1 - 20/100)
-
-            base.send(f"UPDATE `cards` SET `balance` = '{user_balance}' WHERE id = '{reciever_card_id}'")
-        else:
-            gov_balance += amount
-
-        base.send(f"UPDATE `cards` SET `balance` = '{gov_balance}' WHERE id = '0001'")
-        base.send(f"UPDATE `invoices` SET `status`= 'Оплачен' WHERE id = '{invoice_id}'")
-
-        timezone_offset = +3.0
-        tzinfo = timezone(timedelta(hours=timezone_offset))
-        date = str(datetime.datetime.now(tzinfo)).split('.')[0]
-        date_format = datetime.datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
-        timestamp = int(str(datetime.datetime.timestamp(date_format)).split('.')[0])
-        timestamp = f"<t:{timestamp}:f>"
-
-        #remove fine if type == fine
-        if(type == 'Штраф'):
-            #update fine status in db
-            base.send(f"UPDATE fines SET status = 'Оплачен' WHERE invoice_id = '{invoice_id}'")
-
-            #get fine info and message
+        
+        #logic for fines invoices
+        if type == 'Штраф':
+            #get fine info
             fine = base.request_one(f"SELECT id,message_id FROM fines WHERE invoice_id = '{invoice_id}'")
             fine_id = fine['id']
 
+            #gen timestamp
+            timezone_offset = +3.0
+            tzinfo = timezone(timedelta(hours=timezone_offset))
+            date = str(datetime.datetime.now(tzinfo)).split('.')[0]
+            date_format = datetime.datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
+            timestamp = int(str(datetime.datetime.timestamp(date_format)).split('.')[0])
+            timestamp = f"<t:{timestamp}:f>"
+
+            #get goverment balance
+            goverment_card = base.request_one("SELECT * FROM cards WHERE id = '0001'")
+            gov_balance = goverment_card['balance']
+
+            #prepare log message
+            logs_message = discord.Embed(color=0x80d8ed)
+            logs_message.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
+
+            #check if goverment == reciever
+            reciever_user_id = int(invoice['to_userid'])
+            if(reciever_user_id != 1195315985532604506):
+                reciever_card = base.request_one(f"SELECT * FROM cards WHERE owner_id = '{reciever_user_id}'")
+                reciever_card_id = reciever_card['id']
+
+                #calc and update balances
+                user_balance = int(reciever_card['balance'])
+                gov_balance += amount * (1 - 80/100)
+                user_balance += amount * (1 - 20/100)
+                base.send(f"UPDATE `cards` SET `balance` = '{user_balance}' WHERE id = '{reciever_card_id}'")
+
+                #send message in logs
+                logs_message.description = f"### 💵 Штраф {fine_id} оплачен \n`{amount}` алмазов было распределено между получателем и правительством. \n`{amount * (1 - 20/100)}` алмазов было направлено получателю <@{reciever_user_id}> \n`{amount * (1 - 80/100)}` алмазов было направлено в казну правительства. \n\nДата выполнения операции: {timestamp}"
+                await webhook.logsSend(logs_message)
+            else:
+                #calc goverment balance
+                gov_balance += amount
+                
+                #send message in logs
+                logs_message.description = f"### 💵 Штраф {fine_id} оплачен \n`{amount}` алмазов было направлено в казну правительства. \n\nДата выполнения операции: {timestamp}"
+                await webhook.logsSend(logs_message)
+
+            #update goverment balance
+            base.send(f"UPDATE `cards` SET `balance` = '{gov_balance}' WHERE id = '0001'")
+            
+            #update invoice and fine status
+            base.send(f"UPDATE `invoices` SET `status`= 'Оплачен' WHERE id = '{invoice_id}'")
+            base.send(f"UPDATE fines SET status = 'Оплачен' WHERE invoice_id = '{invoice_id}'")
+
+            #get fine message
             msg_id = fine['message_id']
             msg = await webhook.notifyGet(msg_id)
             msg_embed = msg.embeds[0]
-            
-            #edit message and send user
-            if(owner != inter.author):
-                msg_embed.description = f"~~{msg_embed.description}~~ \n\n**Штраф оплачен игроком {inter.author.mention}. \nДата оплаты штрафа: {timestamp}.**"
-                responce_pm = discord.Embed(description=f"### Ваш штраф `{fine_id}` оплачен игроком {inter.author.mention} \nПриятной игры!",color=0x80d8ed)
-            else:
-                msg_embed.description = f"~~{msg_embed.description}~~ \n\n**Штраф оплачен. \nДата оплаты штрафа: {timestamp}.**"
-                responce_pm = discord.Embed(description=f"### Ваш штраф `{fine_id}` успешно оплачен \nПриятной игры!",color=0x80d8ed)
-            await webhook.notifyEdit(id=msg_id, message=msg_embed)
 
+            #edit fine message
+            msg_embed.description = msg_embed.description.replace("**","~~")
+            msg_embed.description = f"{msg_embed.description} \n\n**Штраф оплачен.** \nДата оплаты: {timestamp}"
+            await webhook.notifyEdit(msg_id,msg_embed)
+
+            #prepare message to user
+            responce_pm = discord.Embed(color=0x80d8ed)
             responce_pm.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
+
+            #send message to user
+            if(owner != inter.author):
+                responce_pm.description = f"### Ваш штраф `{fine_id}` оплачен игроком {inter.author.mention} \nПриятной игры!"
+            else:
+                responce_pm.description = f"### Ваш штраф `{fine_id}` успешно оплачен \nПриятной игры!"
             await owner.send(embed=responce_pm)
         else:
-            #gen and send responce
-            if(owner != inter.author):
-                logs_message = discord.Embed(description=f"### 💵 Пользователь {inter.author.mention} оплатил счёт `{invoice_id}` игрока {owner.mention} \nТип счёта: `{type}`\nСумма счёта: `{amount}` алмазов \n\nСчёт оформлен банкиром {invoice_author.mention} \nДата выполнения операции: {timestamp}.",color=0x80d8ed)
-                responce_pm2 = discord.Embed(description=f"### Вас счёт `{invoice_id}` успешно оплачен \nТип счёта: `{type}`\nСумма счёта: `{amount}` алмазов \n\nСчёт оформлен банкиром {invoice_author.mention} \nДата выполнения операции: {timestamp}.",color=0x80d8ed)
-            else:
-                logs_message = discord.Embed(description=f"### 💵 Пользователь {inter.author.mention} оплатил счёт `{invoice_id}` игрока {owner.mention} \nТип счёта: `{type}`\nСумма счёта: `{amount}` алмазов \n\nСчёт оформлен банкиром {invoice_author.mention} \nДата выполнения операции: {timestamp}.",color=0x80d8ed)
-                responce_pm2 = discord.Embed(description=f"### Вас счёт `{invoice_id}` успешно оплачен \nТип счёта: `{type}`\nСумма счёта: `{amount}` алмазов \n\nСчёт оформлен банкиром {invoice_author.mention} \nДата выполнения операции: {timestamp}.",color=0x80d8ed)
-            
-            logs_message.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
-            await webhook.logsSend(logs_message)
-
-            responce_pm2.set_footer(text=f'{main.copyright()}',icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
-            await owner.send(embed=responce_pm2)
+            pass
+            #TODO: реализовать иные виды счетов и логику под них
         await inter.send(f"{config.accept} Счёт `{invoice_id}` успешно оплачен.",ephemeral=True)
 
     @commands.slash_command(name="баланс", description="💳 Показывает баланс вашей карты или указанного пользователя", guild_ids=[921483461016031263], test_guilds=[921483461016031263])
@@ -244,4 +253,5 @@ class PlayerCMD(commands.Cog):
         await inter.send(embed=responce, ephemeral=True)
                 
 def setup(client):
+
     client.add_cog(PlayerCMD(client))
