@@ -13,23 +13,31 @@ class PlayerCMD(commands.Cog):
     @commands.slash_command(name="перевести", description="💵 Переводит алмазы на указанную карту", guild_ids=[921483461016031263], test_guilds=[921483461016031263])
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def give_money(self, inter, card_id: str, sum: int, comment: str):
+        #start response
         await inter.response.defer(ephemeral = True)
+        embed = discord.Embed(description=f"<a:load:1256975206455447643> Обрабатываю ваш запрос, ожидайте..", color=0x2f3136)
+        await inter.send(embed = embed, ephemeral = True)
+
         #sum validation
         if(sum < 0 or sum == 0):
-            await inter.send(f'{config.deny} Введена некорректная сумма. Принимаются только положительные числа.',ephemeral=True)
+            embed.description = f'{config.deny} Введена некорректная сумма. Принимаются только положительные числа.'
+            await inter.edit_original_response(embed = embed)
             return
         if(sum > 5000):
-            await inter.send(f'{config.deny} За раз можно перевести не более 5000 алмазов.',ephemeral=True)
+            embed.description = f'{config.deny} За раз можно перевести не более 5000 алмазов.'
+            await inter.edit_original_response(embed = embed)
             return
         
         #card id validation
         if(len(card_id) != 4):
-            await inter.send(f'{config.deny} Неправильный номер карты. Пример номера: `0001`.',ephemeral=True)
+            embed.description = f'{config.deny} Неправильный номер карты. Пример номера: `0001`.'
+            await inter.edit_original_response(embed = embed)
             return
         try:
             int(card_id)
         except ValueError:
-            await inter.send(f'{config.deny} Неправильный номер карты. Пример номера: `0001`.',ephemeral=True)
+            embed.description = f'{config.deny} Неправильный номер карты. Пример номера: `0001`.'
+            await inter.edit_original_response(embed = embed)
             return
         card_id = int(card_id)
         
@@ -37,17 +45,20 @@ class PlayerCMD(commands.Cog):
         owner_card = base.request_one(f"SELECT * FROM `cards` WHERE owner_id = {inter.author.id}")
         reciever_card_info = base.request_one(f"SELECT * FROM `cards` WHERE id = {card_id}")
         if owner_card == None:
-            await inter.send(f'{config.deny} На ваше имя нету зарегистрированных карт, обратитесь в отделение банка для оформления карты.',ephemeral=True)
+            embed.description = f'{config.deny} У вас нету банковской карты. Обратитесь в отделение банка для её оформления.'
+            await inter.edit_original_response(embed = embed)
             return
         if reciever_card_info == None:
-            await inter.send(f'{config.deny} Карта `FW-{card_id}` не найдена. Убедитесь, что вы ввели правильный номер.',ephemeral=True)
+            embed.description = f'{config.deny} Карта `FW-{card_id}` не найдена. Убедитесь, что вы ввели правильный номер.'
+            await inter.edit_original_response(embed = embed)
             return
         
         #check users id
         owner_id = owner_card['owner_id']
         reciever_id = reciever_card_info['owner_id']
         if(owner_id == reciever_id):
-            await inter.send(f'{config.deny} Вы не можете перевести алмазы самому себе.',ephemeral=True)
+            embed.description = f'{config.deny} Вы не можете перевести алмазы самому себе.'
+            await inter.edit_original_response(embed = embed)
             return
         
         owner = await self.client.fetch_user(int(owner_id))
@@ -86,27 +97,34 @@ class PlayerCMD(commands.Cog):
         await reciever.send(embed=responce_reciever_pm)
 
         #gen and send responce
-        await inter.send(f"{config.accept} 💸 Вы перевели {sum} алмазов на карту `FW-{card_id}`.",ephemeral=True)
+        embed.description = f'{config.accept} 💸 Вы перевели {sum} алмазов на карту `FW-{card_id}`.'
+        await inter.edit_original_response(embed = embed)
         
     @commands.slash_command(name="оплатить-счёт", description="💵 Оплачивает указанный счёт", guild_ids=[921483461016031263], test_guilds=[921483461016031263])
     @commands.cooldown(1,10, commands.BucketType.user)
     async def pay_invoice(self, inter, invoice_id = str):
+        #start response
         await inter.response.defer(ephemeral = True)
+        embed = discord.Embed(description=f"<a:load:1256975206455447643> Обрабатываю ваш запрос, ожидайте..", color=0x2f3136)
+        await inter.send(embed = embed, ephemeral = True)
+
         #card id validation
         if(len(invoice_id) != 6):
-            await inter.send(f'{config.deny} Неправильный номер счёта. Пример номера: `000001`.',ephemeral=True)
+            embed.description = f'{config.deny} Неправильный номер счёта. Пример номера: `000001`.'
+            await inter.edit_original_response(embed = embed)
             return
         try:
             int(invoice_id)
         except ValueError:
-            await inter.send(f'{config.deny} Неправильный номер счёта. Пример номера: `000001`.',ephemeral=True)
+            embed.description = f'{config.deny} Неправильный номер счёта. Пример номера: `000001`.'
+            await inter.edit_original_response(embed = embed)
             return
-        invoice_id = invoice_id
 
         #get owner card info
         owner_card = base.request_one(f"SELECT * FROM `cards` WHERE owner_id = {inter.author.id}")
         if owner_card == None:
-            await inter.send(f'{config.deny} Вы не обладаете никакими картами, обратитесь в отделение банка для оформления карты.',ephemeral=True)
+            embed.description = f'{config.deny} У вас нету банковской карты. Обратитесь в отделение банка для её оформления.'
+            await inter.edit_original_response(embed = embed)
             return
 
         #check is invoice exists
@@ -114,12 +132,15 @@ class PlayerCMD(commands.Cog):
         if invoice == None:
             invoice = base.request_one(f"SELECT * FROM `invoices` WHERE id = '{invoice_id}'")
             if invoice == None:
-                await inter.send(f'{config.deny} Счёт `{invoice_id}` не найден.', ephemeral=True)
+                embed.description = f'{config.deny} Счёт `{invoice_id}` не найден.'
+                await inter.edit_original_response(embed = embed)
             else:
                 if invoice['status'] == 'Оплачен':
-                    await inter.send(f'{config.deny} Счёт `{invoice_id}` уже оплачен.', ephemeral=True)
+                    embed.description = f'{config.deny} Счёт `{invoice_id}` уже оплачен.'
+                    await inter.edit_original_response(embed = embed)
                 else:
-                    await inter.send(f'{config.deny} Счёт `{invoice_id}` уже отменён.', ephemeral=True)
+                    embed.description = f'{config.deny} Счёт `{invoice_id}` уже отменён.'
+                    await inter.edit_original_response(embed = embed)
             return
         
         #get invoice info
@@ -131,7 +152,8 @@ class PlayerCMD(commands.Cog):
         owner_card_id = int(owner_card['id'])
         owner_balance = int(owner_card['balance'])
         if owner_balance < amount:
-            await inter.send(f"{config.deny} На карте `FW-{owner_card_id}` недостаточно средств (Баланс: `{owner_balance}` алмазов, а для оплаты нужно `{amount}` алмазов).",ephemeral=True)
+            embed.description = f'{config.deny} На карте `FW-{owner_card_id}` недостаточно средств (Баланс: `{owner_balance}` алмазов, а для оплаты нужно `{amount}` алмазов).'
+            await inter.edit_original_response(embed = embed)
             return
         owner_balance -= amount
 
@@ -212,12 +234,17 @@ class PlayerCMD(commands.Cog):
         else:
             pass
             #TODO: реализовать иные виды счетов и логику под них
-        await inter.send(f"{config.accept} Счёт `{invoice_id}` успешно оплачен.",ephemeral=True)
+        embed.description = f'{config.accept} Счёт `{invoice_id}` успешно оплачен.'
+        await inter.edit_original_response(embed = embed)
 
     @commands.slash_command(name="баланс", description="💳 Показывает баланс вашей карты или указанного пользователя", guild_ids=[921483461016031263], test_guilds=[921483461016031263])
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def balance(self, inter, member: discord.Member = None):
+        #start response
         await inter.response.defer(ephemeral = True)
+        embed = discord.Embed(description=f"<a:load:1256975206455447643> Обрабатываю ваш запрос, ожидайте..", color=0x2f3136)
+        await inter.send(embed = embed, ephemeral = True)
+
         guild = self.client.get_guild(inter.guild.id) 
         banker_role = discord.utils.get(guild.roles,id=config.banker_role)
 
@@ -237,7 +264,8 @@ class PlayerCMD(commands.Cog):
         #get card info by member id
         card_info = base.request_all(f"SELECT * FROM `cards` WHERE owner_id = {member.id}")
         if card_info == ():
-            await inter.send(f'{config.deny} Не нашёл зарегистрированных карт на имя {member.mention}.',ephemeral=True)
+            embed.description = f'{config.deny} У игрока {member.mention} нету карт.'
+            await inter.edit_original_response(embed = embed)
             return
         
         #gen and send responce
@@ -247,8 +275,7 @@ class PlayerCMD(commands.Cog):
             card_opendate = x['date_open']
             banker = await self.client.fetch_user(int(x['banker_id']))
             responce.add_field(inline=False, name=f'Карта `FW-{card_id}`', value=f"Баланс: `{card_balance}`. \nОформлена банкиром {banker.mention}. \nДата оформления: `{card_opendate}`")
-        await inter.send(embed=responce, ephemeral=True)
+        await inter.edit_original_response(embed = responce)
                 
 def setup(client):
-
     client.add_cog(PlayerCMD(client))

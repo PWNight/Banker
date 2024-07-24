@@ -18,7 +18,10 @@ class BankerCMD(commands.Cog):
     @commands.has_role(1219227957973876736)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def create_card(self, inter, member: discord.Member, comment: str):
+        #start response
         await inter.response.defer(ephemeral = True)
+        embed = discord.Embed(description=f"<a:load:1256975206455447643> Обрабатываю ваш запрос, ожидайте..", color=0x2f3136)
+        await inter.send(embed = embed, ephemeral = True)
         
         #func gen card and validate card id (example: 0011)
         def gen_id():
@@ -45,13 +48,15 @@ class BankerCMD(commands.Cog):
         guild = inter.guild
         player_role = discord.utils.get(guild.roles,id=1172204202328592455)    
         if(player_role not in member.roles):
-            await inter.send(f'{config.deny} Пользователь не является игроком проекта.',ephemeral=True)
+            embed.description = f'{config.deny} Пользователь не является игроком проекта.'
+            await inter.edit_original_response(embed = embed)
             return
             
         #get member card info
         card_info = base.request_one(f"SELECT * FROM `cards` WHERE owner_id = {member.id}")
         if card_info != None:
-            await inter.send(f'{config.deny} У пользователя уже есть зарегистрированная карта `FW-{card_info["id"]}`.',ephemeral=True)
+            embed.description = f'{config.deny} У пользователя уже есть зарегистрированная карта `FW-{card_info["id"]}`.'
+            await inter.edit_original_response(embed = embed)
             return
         
         owner = member
@@ -77,28 +82,36 @@ class BankerCMD(commands.Cog):
         await owner.send(embed=responce_pm)
 
         #gen and send responce message
-        await inter.send(f'{config.accept} Карта `FW-{card_id}` для пользователя {owner.mention} успешно оформлена.',ephemeral=True)
+        embed.description = f'{config.accept} Карта `FW-{card_id}` для пользователя {owner.mention} успешно оформлена.'
+        await inter.edit_original_response(embed = embed)
 
     @commands.slash_command(name="удалить-карту", description="💳 Удаляет указанную банковскую карту", guild_ids=[921483461016031263], test_guilds=[921483461016031263])
     @commands.has_role(1219227957973876736)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def delete_card(self, inter, card_id: str, comment: str):
+        #start response
         await inter.response.defer(ephemeral = True)
+        embed = discord.Embed(description=f"<a:load:1256975206455447643> Обрабатываю ваш запрос, ожидайте..", color=0x2f3136)
+        await inter.send(embed = embed, ephemeral = True)
+
         #card id validation
         if(len(card_id) != 4):
-            await inter.send(f'{config.deny} Неправильный номер карты. Пример номера: `0001`.',ephemeral=True)
+            embed.description = f'{config.deny} Неправильный номер карты. Пример номера: `0001`.'
+            await inter.edit_original_response(embed = embed)
             return
         try:
             int(card_id)
         except ValueError:
-            await inter.send(f'{config.deny} Неправильный номер карты. Пример номера: `0001`.',ephemeral=True)
+            embed.description = f'{config.deny} Неправильный номер карты. Пример номера: `0001`.'
+            await inter.edit_original_response(embed = embed)
             return
         card_id = int(card_id)
             
         #get member card info
         card_info = base.request_one(f"SELECT * FROM `cards` WHERE id = {card_id}")
         if card_info == None:
-            await inter.send(f'{config.deny} Карта `FW-{card_id}` не найдена. Убедитесь, что вы ввели правильный номер.',ephemeral=True)
+            embed.description = f'{config.deny} Карта `FW-{card_id}` не найдена. Убедитесь, что вы ввели правильный номер.'
+            await inter.edit_original_response(embed = embed)
             return
                 
         owner = await self.client.fetch_user(card_info['owner_id'])
@@ -122,36 +135,46 @@ class BankerCMD(commands.Cog):
         await owner.send(embed=responce_pm)
 
         #gen and send responce message
-        await inter.send(f'{config.accept} Карта `FW-{card_id}` пользователя {owner.mention} успешно удалена.',ephemeral=True)
+        embed.description = f'{config.accept} Карта `FW-{card_id}` пользователя {owner.mention} успешно удалена.'
+        await inter.edit_original_response(embed = embed)
     
     @commands.slash_command(name="снять-алмазы", description="💸 Снимает алмазы с указанной карты", guild_ids=[921483461016031263], test_guilds=[921483461016031263])
     @commands.has_role(1219227957973876736)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def take_money(self, inter, card_id: str, sum: int, comment: str):
+        #start response
         await inter.response.defer(ephemeral = True)
+        embed = discord.Embed(description=f"<a:load:1256975206455447643> Обрабатываю ваш запрос, ожидайте..", color=0x2f3136)
+        await inter.send(embed = embed, ephemeral = True)
+
         #sum validation
         if(sum < 0 or sum == 0):
-            await inter.send(f'{config.deny} Введена некорректная сумма. Принимаются только положительные числа.',ephemeral=True)
+            embed.description = f'{config.deny} Введена некорректная сумма. Принимаются только положительные числа.'
+            await inter.edit_original_response(embed = embed)
             return
         if(sum > 5000):
-            await inter.send(f'{config.deny} За раз можно снять не более 5000 алмазов.',ephemeral=True)
+            embed.description = f'{config.deny} За раз можно снять не более 5000 алмазов.'
+            await inter.edit_original_response(embed = embed)
             return
         
         #card id validation
         if(len(card_id) != 4):
-            await inter.send(f'{config.deny} Неправильный номер карты. Пример номера: `0001`.',ephemeral=True)
+            embed.description = f'{config.deny} Неправильный номер карты. Пример номера: `0001`.'
+            await inter.edit_original_response(embed = embed)
             return
         try:
             int(card_id)
         except ValueError:
-            await inter.send(f'{config.deny} Неправильный номер карты. Пример номера: `0001`.',ephemeral=True)
+            embed.description = f'{config.deny} Неправильный номер карты. Пример номера: `0001`.'
+            await inter.edit_original_response(embed = embed)
             return
         card_id = int(card_id)
 
         #get card info by card id
         card_info = base.request_one(f"SELECT * FROM `cards` WHERE id = {card_id}")
         if card_info == None:
-            await inter.send(f'{config.deny} Карта `FW-{card_id}` не найдена. Убедитесь, что вы ввели правильный номер.',ephemeral=True)
+            embed.description = f'{config.deny} Карта `FW-{card_id}` не найдена. Убедитесь, что вы ввели правильный номер.'
+            await inter.edit_original_response(embed = embed)
             return
         
         owner = await self.client.fetch_user(card_info['owner_id'])
@@ -166,7 +189,8 @@ class BankerCMD(commands.Cog):
         #get balance and calc new
         balance = int(card_info['balance'])
         if balance < sum:
-            await inter.send(f'{config.deny} На карте `FW-{card_id}` недостаточно средств. Баланс: `{balance}` алмазов, а снимается `{sum}` алмазов.',ephemeral=True)
+            embed.description = f'{config.deny} На карте `FW-{card_id}` недостаточно средств. Баланс: `{balance}` алмазов, а необходимо `{sum}` алмазов.'
+            await inter.edit_original_response(embed = embed)
             return
         new_balance = balance - sum
 
@@ -182,36 +206,46 @@ class BankerCMD(commands.Cog):
         await owner.send(embed=responce_pm)
 
         #gen and send responce
-        await inter.send(f'{config.accept} Вы сняли с карты пользователя {owner.mention} (`FW-{card_id}`) {sum} алмазов.',ephemeral=True)
+        embed.description = f'{config.accept} Вы сняли с карты пользователя {owner.mention} (`FW-{card_id}`) {sum} алмазов.'
+        await inter.edit_original_response(embed = embed)
         
     @commands.slash_command(name="пополнить-карту", description="💸 Пополняет карту пользователя", guild_ids=[921483461016031263], test_guilds=[921483461016031263])
     @commands.has_role(1219227957973876736)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def grant_money(self, inter, card_id: str, sum: int, comment: str):
+        #start response
         await inter.response.defer(ephemeral = True)
+        embed = discord.Embed(description=f"<a:load:1256975206455447643> Обрабатываю ваш запрос, ожидайте..", color=0x2f3136)
+        await inter.send(embed = embed, ephemeral = True)
+
         #sum validation
         if(sum < 0 or sum == 0):
-            await inter.send(f'{config.deny} Введена некорректная сумма. Принимаются только положительные числа.',ephemeral=True)
+            embed.description = f'{config.deny} Введена некорректная сумма. Принимаются только положительные числа.'
+            await inter.edit_original_response(embed = embed)
             return
         if(sum > 5000):
-            await inter.send(f'{config.deny} За раз можно пополнить не более 5000 алмазов.',ephemeral=True)
+            embed.description = f'{config.deny} За раз можно пополнить не более 5000 алмазов.'
+            await inter.edit_original_response(embed = embed)
             return
         
         #card id validation
         if(len(card_id) != 4):
-            await inter.send(f'{config.deny} Неправильный номер карты. Пример номера: `0001`.',ephemeral=True)
+            embed.description = f'{config.deny} Неправильный номер карты. Пример номера: `0001`.'
+            await inter.edit_original_response(embed = embed)
             return
         try:
             int(card_id)
         except ValueError:
-            await inter.send(f'{config.deny} Неправильный номер карты. Пример номера: `0001`.',ephemeral=True)
+            embed.description = f'{config.deny} Неправильный номер карты. Пример номера: `0001`.'
+            await inter.edit_original_response(embed = embed)
             return
         card_id = int(card_id)
 
         #gen card info by card id
         card_info = base.request_one(f"SELECT * FROM `cards` WHERE id = {card_id}")
         if card_info == None:
-            await inter.send(f'{config.deny} Карта `FW-{card_id}` не найдена. Убедитесь, что вы ввели правильный номер.',ephemeral=True)
+            embed.description = f'{config.deny} Карта `FW-{card_id}` не найдена. Убедитесь, что вы ввели правильный номер.'
+            await inter.edit_original_response(embed = embed)
             return
         
         owner_id = card_info['owner_id']
@@ -240,7 +274,8 @@ class BankerCMD(commands.Cog):
         await owner.send(embed=responce_pm)
 
         #gen and send responce
-        await inter.send(f'{config.accept} Вы пополнили карту пользователя {owner.mention} (`FW-{card_id}`) на {sum} алмазов.',ephemeral=True)
+        embed.description = f'{config.accept} Вы пополнили карту пользователя {owner.mention} (`FW-{card_id}`) на {sum} алмазов.'
+        await inter.edit_original_response(embed = embed)
 
 def setup(client):
     client.add_cog(BankerCMD(client))
