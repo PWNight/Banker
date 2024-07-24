@@ -190,12 +190,12 @@ class PlayerCMD(commands.Cog):
 
                 #calc and update balances
                 user_balance = int(reciever_card['balance'])
-                gov_balance += amount * (1 - 80/100)
+                gov_balance += amount * (1 - 90/100)
                 user_balance += amount * (1 - 20/100)
                 base.send(f"UPDATE `cards` SET `balance` = '{user_balance}' WHERE id = '{reciever_card_id}'")
 
                 #send message in logs
-                logs_message.description = f"### 💵 Штраф {fine_id} оплачен \n`{amount}` алмазов было распределено между получателем и правительством. \n`{amount * (1 - 20/100)}` алмазов было направлено получателю <@{reciever_user_id}> \n`{amount * (1 - 80/100)}` алмазов было направлено в казну правительства. \n\nДата выполнения операции: {timestamp}"
+                logs_message.description = f"### 💵 Штраф {fine_id} оплачен \n`{amount}` алмазов было распределено между получателем и правительством. \n`{amount * (1 - 10/100)}` алмазов было направлено получателю <@{reciever_user_id}> \n`{amount * (1 - 90/100)}` алмазов было направлено в казну правительства. \n\nДата выполнения операции: {timestamp}"
                 await webhook.logsSend(logs_message)
             else:
                 #calc goverment balance
