@@ -176,6 +176,7 @@ class PlayerCMD(commands.Cog):
 
             #get goverment balance
             goverment_card = base.request_one("SELECT * FROM cards WHERE id = '0001'")
+            old_gov_balance = goverment_card['balance']
             gov_balance = goverment_card['balance']
 
             #prepare log message
@@ -189,6 +190,7 @@ class PlayerCMD(commands.Cog):
                 reciever_card_id = reciever_card['id']
 
                 #calc and update balances
+                old_user_balance = int(reciever_card['balance'])
                 user_balance = int(reciever_card['balance'])
                 goverment_share = round(amount * (1 - 90/100))
                 user_share = round(amount * (1 - 20/100))
@@ -197,7 +199,7 @@ class PlayerCMD(commands.Cog):
                 base.send(f"UPDATE `cards` SET `balance` = '{user_balance}' WHERE id = '{reciever_card_id}'")
 
                 #send message in logs
-                logs_message.description = f"### 💵 Штраф {fine_id} оплачен \n`{amount}` алмазов было распределено между получателем и правительством. \n`{user_share}` алмазов было направлено получателю <@{reciever_user_id}> \n`{goverment_share}` алмазов было направлено в казну правительства. \n\nДата выполнения операции: {timestamp}"
+                logs_message.description = f"### 💵 Штраф {fine_id} оплачен \n`{amount}` алмазов было распределено между получателем и правительством. \n`{user_share}` алмазов было направлено получателю <@{reciever_user_id}>. Новый баланс: ~~`{old_user_balance}`~~ -> `{user_balance}`. \n`{goverment_share}` алмазов было направлено в казну правительства. Новый баланс: ~~`{old_gov_balance}`~~ -> `{gov_balance}`. \n\nДата выполнения операции: {timestamp}"
                 await webhook.logsSend(logs_message)
             else:
                 #calc goverment balance
