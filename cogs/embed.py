@@ -1,16 +1,9 @@
 import disnake as discord
 from disnake.ext import commands
-
-
 class Embed(commands.Cog):
 
     def __init__(self, client):
         self.client = client
-    @commands.command()
-    @commands.has_permissions(administrator=True)
-    async def guildsetup(self, ctx, *, msg: str = None):
-        embed=discord.Embed(description="🔻 Нажмите на кнопку ниже, чтобы отправить заявку на создание организации.", color = 0x2f3136)
-        await ctx.send(embed=embed)
     @commands.command()
     @commands.has_permissions(manage_messages=True)
     async def say(self, ctx, *, msg: str = None):
@@ -93,10 +86,6 @@ class Embed(commands.Cog):
                 description = " "
             if not simple:
                 em = discord.Embed(title=title, description=description, color=color)
-            #if not title:
-            #    em = discord.Embed(description=description, color=color)
-            #if not description:
-            #    em = discord.Embed(title=title, color=color)
             else:
                 await ctx.message.delete()
                 if not channel:
@@ -127,8 +116,6 @@ class Embed(commands.Cog):
                         em.set_author(name=f"{fm2.display_name}",icon_url=f"{fm2.avatar}")
             else:
                 em.set_author(name=f"{ctx.author.display_name}",icon_url=f"{ctx.author.avatar}")
-            #if not author:
-            #    pass
             if image:
                 em.set_image(url=image)
             if thumbnail:
@@ -172,7 +159,7 @@ class Embed(commands.Cog):
                     await ctx.send(content=ptext, embed=em)
 
         else:
-            await ctx.send(f"Вы не указали аргументы, {ctx.author.mention}!\nВозможный способ использование:\n```\\\say $a MENTION $c HEX $t TITLE TEXT $d DESC TEXT $f FOOTER TEXT $fu URL $image URL $thumb URL```")               
+            await ctx.send(f"Вы не указали аргументы, {ctx.author.mention}!\nВозможный способ использование:\n```\\\say $a MENTION $c HEX $t TITLE TEXT $d DESC TEXT $f FOOTER TEXT $fu URL $image URL $thumb URL```")
 
     @commands.command()
     @commands.has_permissions(manage_messages=True)
