@@ -9,11 +9,6 @@ from configs import config
 # ? ------------------------
 
 intents = discord.Intents.default()
-intents.presences = True
-intents.members = True
-intents.guilds = True
-intents.messages = True
-
 client = commands.Bot(
     command_prefix = f'{config.prefix}',
     help_command = None,

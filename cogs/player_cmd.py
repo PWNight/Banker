@@ -9,9 +9,9 @@ class PlayerCMD(commands.Cog):
         self.client = client
         self.logchannel = self.client.get_channel(config.logschannel)
     @commands.slash_command(name="перевести",
-                            description="💵 Переводит алмазы на указанную карту",
-                            guild_ids=[921483461016031263],
-                            test_guilds=[921483461016031263]
+        description="💵 Переводит алмазы на указанную карту",
+        guild_ids=[921483461016031263],
+        test_guilds=[921483461016031263]
     )
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def give_money(self, inter, card_id: str, sum: int):
