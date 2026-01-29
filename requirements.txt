@@ -3,3 +3,4 @@ asyncio
 pymysql
 datetime
 random2
+aiohttp
