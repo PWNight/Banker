@@ -5,6 +5,7 @@ from disnake.ext import commands
 from api import base
 from api import main
 from api import webhook
+from api.main import get_timestamp
 from configs import config
 
 
@@ -12,8 +13,11 @@ class PlayerCMD(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-    @commands.slash_command(name="перевести", description="💵 Переводит алмазы на указанную карту",
-                            guild_ids=[921483461016031263], test_guilds=[921483461016031263])
+    @commands.slash_command(name="перевести",
+        description="💵 Переводит алмазы на указанную карту",
+        guild_ids=[921483461016031263],
+        test_guilds=[921483461016031263]
+    )
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def give_money(self, inter, card_id: str, sum: int, comment: str):
         # start response
@@ -23,17 +27,17 @@ class PlayerCMD(commands.Cog):
         await inter.send(embed=embed, ephemeral=True)
 
         # sum validation
-        if (sum < 0 or sum == 0):
+        if sum < 0 or sum == 0:
             embed.description = f'{config.deny} Введена некорректная сумма. Принимаются только положительные числа.'
             await inter.edit_original_response(embed=embed)
             return
-        if (sum > 5000):
+        if sum > 5000:
             embed.description = f'{config.deny} За раз можно перевести не более 5000 алмазов.'
             await inter.edit_original_response(embed=embed)
             return
 
         # card id validation
-        if (len(card_id) != 4):
+        if len(card_id) != 4:
             embed.description = f'{config.deny} Неправильный номер карты. Пример номера: `0001`.'
             await inter.edit_original_response(embed=embed)
             return
@@ -48,11 +52,11 @@ class PlayerCMD(commands.Cog):
         # get cards info by inter id and card id
         owner_card = base.request_one(f"SELECT * FROM `cards` WHERE owner_id = {inter.author.id}")
         reciever_card_info = base.request_one(f"SELECT * FROM `cards` WHERE id = {card_id}")
-        if owner_card == None:
+        if owner_card is None:
             embed.description = f'{config.deny} У вас нету банковской карты. Обратитесь в отделение банка для её оформления.'
             await inter.edit_original_response(embed=embed)
             return
-        if reciever_card_info == None:
+        if reciever_card_info is None:
             embed.description = f'{config.deny} Карта `FW-{card_id}` не найдена. Убедитесь, что вы ввели правильный номер.'
             await inter.edit_original_response(embed=embed)
             return
@@ -60,7 +64,7 @@ class PlayerCMD(commands.Cog):
         # check users id
         owner_id = owner_card['owner_id']
         reciever_id = reciever_card_info['owner_id']
-        if (owner_id == reciever_id):
+        if owner_id == reciever_id:
             embed.description = f'{config.deny} Вы не можете перевести алмазы самому себе.'
             await inter.edit_original_response(embed=embed)
             return
@@ -68,12 +72,6 @@ class PlayerCMD(commands.Cog):
         owner = await self.client.fetch_user(int(owner_id))
         owner_card_id = owner_card['id']
         reciever = await self.client.fetch_user(int(reciever_id))
-        timezone_offset = +3.0
-        tzinfo = timezone(timedelta(hours=timezone_offset))
-        date = str(datetime.datetime.now(tzinfo)).split('.')[0]
-        date_format = datetime.datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
-        timestamp = int(str(datetime.datetime.timestamp(date_format)).split('.')[0])
-        timestamp = f"<t:{timestamp}:f>"
 
         # get and calc new balance
         owner_balance = int(owner_card['balance'])
@@ -90,6 +88,8 @@ class PlayerCMD(commands.Cog):
         base.send(f"UPDATE `cards` SET `balance` = {owner_balance} WHERE id = {owner_card_id}")
         base.send(f"UPDATE `cards` SET `balance` = {reciever_balance} WHERE id = {card_id}")
 
+        # send log
+        timestamp = get_timestamp()
         logs_message = discord.Embed(
             description=f"### 💸 Пользователь {owner.mention} перевёл пользователю {reciever.mention} {sum} алмазов \nКарта владельца: `FW-{owner_card_id}`. \nКарта получателя: `FW-{card_id}`. \n\nДата оформления транзакции: {timestamp}. \nКомментарий к операции: `{comment}`.",
             color=0xEFAF6F)
@@ -97,6 +97,7 @@ class PlayerCMD(commands.Cog):
                                 icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await webhook.send_log(logs_message)
 
+        # send owner pm response
         responce_owner_pm = discord.Embed(
             description=f"### Вы перевели {sum} алмазов на карту `FW-{card_id}` \nДата оформления транзакции: {timestamp}. \nКомментарий к операции: `{comment}`.",
             color=0xEFAF6F)
@@ -104,29 +105,36 @@ class PlayerCMD(commands.Cog):
                                      icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await owner.send(embed=responce_owner_pm)
 
+        # send reciever pm response
         responce_reciever_pm = discord.Embed(
             description=f"### Вы получили {sum} алмазов на карту `FW-{card_id}` \nПеревод поступил от {owner.mention} (`FW-{owner_card_id}`) \nДата оформления транзакции: {timestamp}. \nКомментарий к операции: `{comment}`.",
-            color=0xEFAF6F)
+            color=0xEFAF6F
+        )
         responce_reciever_pm.set_footer(text=f'{main.copyright()}',
-                                        icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
+            icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&'
+        )
         await reciever.send(embed=responce_reciever_pm)
 
-        # gen and send responce
+        # send response
         embed.description = f'{config.accept} 💸 Вы перевели {sum} алмазов на карту `FW-{card_id}`.'
         await inter.edit_original_response(embed=embed)
 
-    @commands.slash_command(name="оплатить-счёт", description="💵 Оплачивает указанный счёт",
-                            guild_ids=[921483461016031263], test_guilds=[921483461016031263])
+    @commands.slash_command(name="оплатить-счёт",
+        description="💵 Оплачивает указанный счёт",
+        guild_ids=[921483461016031263], test_guilds=[921483461016031263]
+    )
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def pay_invoice(self, inter, invoice_id=str):
         # start response
         await inter.response.defer(ephemeral=True)
-        embed = discord.Embed(description=f"<a:load:1256975206455447643> Обрабатываю ваш запрос, ожидайте..",
-                              color=0x2f3136)
+        embed = discord.Embed(
+            description=f"<a:load:1256975206455447643> Обрабатываю ваш запрос, ожидайте..",
+            color=0x2f3136
+        )
         await inter.send(embed=embed, ephemeral=True)
 
         # card id validation
-        if (len(invoice_id) != 6):
+        if len(invoice_id) != 6:
             embed.description = f'{config.deny} Неправильный номер счёта. Пример номера: `000001`.'
             await inter.edit_original_response(embed=embed)
             return
@@ -139,7 +147,7 @@ class PlayerCMD(commands.Cog):
 
         # get owner card info
         owner_card = base.request_one(f"SELECT * FROM `cards` WHERE owner_id = {inter.author.id}")
-        if owner_card == None:
+        if owner_card is None:
             embed.description = f'{config.deny} У вас нету банковской карты. Обратитесь в отделение банка для её оформления.'
             await inter.edit_original_response(embed=embed)
             return
@@ -147,9 +155,9 @@ class PlayerCMD(commands.Cog):
         # check is invoice exists
         invoice = base.request_one(
             f"SELECT * FROM `invoices` WHERE id = '{invoice_id}' AND status NOT IN ('Оплачен','Отменён')")
-        if invoice == None:
+        if invoice is None:
             invoice = base.request_one(f"SELECT * FROM `invoices` WHERE id = '{invoice_id}'")
-            if invoice == None:
+            if invoice is None:
                 embed.description = f'{config.deny} Счёт `{invoice_id}` не найден.'
                 await inter.edit_original_response(embed=embed)
             else:
@@ -184,14 +192,6 @@ class PlayerCMD(commands.Cog):
             fine = base.request_one(f"SELECT id,message_id FROM fines WHERE invoice_id = '{invoice_id}'")
             fine_id = fine['id']
 
-            # gen timestamp
-            timezone_offset = +3.0
-            tzinfo = timezone(timedelta(hours=timezone_offset))
-            date = str(datetime.datetime.now(tzinfo)).split('.')[0]
-            date_format = datetime.datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
-            timestamp = int(str(datetime.datetime.timestamp(date_format)).split('.')[0])
-            timestamp = f"<t:{timestamp}:f>"
-
             # get goverment balance
             goverment_card = base.request_one("SELECT * FROM cards WHERE id = '0001'")
             old_gov_balance = goverment_card['balance']
@@ -199,12 +199,16 @@ class PlayerCMD(commands.Cog):
 
             # prepare log message
             logs_message = discord.Embed(color=0x80d8ed)
-            logs_message.set_footer(text=f'{main.copyright()}',
-                                    icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
+            logs_message.set_footer(
+                text=f'{main.copyright()}',
+                icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&'
+            )
+
+            timestamp = get_timestamp()
 
             # check if goverment == reciever
             reciever_user_id = int(invoice['to_userid'])
-            if (reciever_user_id != 1195315985532604506):
+            if reciever_user_id != 1195315985532604506:
                 reciever_card = base.request_one(f"SELECT * FROM cards WHERE owner_id = '{reciever_user_id}'")
                 reciever_card_id = reciever_card['id']
 
@@ -243,11 +247,12 @@ class PlayerCMD(commands.Cog):
             # prepare message to user
             responce_pm = discord.Embed(color=0x80d8ed)
             responce_pm.set_footer(text=f'{main.copyright()}',
-                                   icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
+               icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&'
+            )
 
             # edit fine message and send message to user
             msg_embed.description = msg_embed.description.replace("**", "~~")
-            if (owner != inter.author):
+            if owner != inter.author:
                 msg_embed.description = f"{msg_embed.description} \n\n**Штраф оплачен игроком {inter.author.mention}.** \nДата оплаты: {timestamp}"
                 responce_pm.description = f"### Ваш штраф `{fine_id}` оплачен игроком {inter.author.mention} \nПриятной игры!"
             else:
@@ -258,11 +263,15 @@ class PlayerCMD(commands.Cog):
         else:
             pass
             # TODO: реализовать иные виды счетов и логику под них
+        # send response
         embed.description = f'{config.accept} Счёт `{invoice_id}` успешно оплачен.'
         await inter.edit_original_response(embed=embed)
 
-    @commands.slash_command(name="баланс", description="💳 Показывает баланс вашей карты или указанного пользователя",
-                            guild_ids=[921483461016031263], test_guilds=[921483461016031263])
+    @commands.slash_command(name="баланс",
+        description="💳 Показывает баланс вашей карты или указанного пользователя",
+        guild_ids=[921483461016031263],
+        test_guilds=[921483461016031263]
+    )
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def balance(self, inter, member: discord.Member = None):
         # start response
