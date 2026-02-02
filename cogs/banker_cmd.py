@@ -1,11 +1,10 @@
 import disnake as discord
-import datetime
-from datetime import timezone, timedelta
 from disnake.ext import commands
 import random2
 from api import base
 from api import main
 from api import webhook
+from api.main import get_timestamp
 from configs import config
 
 
@@ -13,8 +12,11 @@ class BankerCMD(commands.Cog):
     def __init__(self, client):
         self.client = client
 
-    @commands.slash_command(name="создать-карту", description="💳 Создаёт банковскую карту на указанного пользователя",
-                            guild_ids=[921483461016031263], test_guilds=[921483461016031263])
+    @commands.slash_command(name="создать-карту",
+        description="💳 Создаёт банковскую карту на указанного пользователя",
+        guild_ids=[921483461016031263],
+        test_guilds=[921483461016031263]
+    )
     @commands.has_role(1219227957973876736)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def create_card(self, inter, member: discord.Member, comment: str):
@@ -39,7 +41,7 @@ class BankerCMD(commands.Cog):
         def validate_id():
             card_id = gen_id()
             is_card_exists = base.request_one(f"SELECT * FROM `cards` WHERE id = {card_id}")
-            if is_card_exists != None:
+            if is_card_exists is not None:
                 validate_id()
             else:
                 return card_id
@@ -49,53 +51,55 @@ class BankerCMD(commands.Cog):
         # check if member != server player
         guild = inter.guild
         player_role = discord.utils.get(guild.roles, id=1172204202328592455)
-        if (player_role not in member.roles):
+        if player_role not in member.roles:
             embed.description = f'{config.deny} Пользователь не является игроком проекта.'
             await inter.edit_original_response(embed=embed)
             return
 
         # get member card info
         card_info = base.request_one(f"SELECT * FROM `cards` WHERE owner_id = {member.id}")
-        if card_info != None:
+        if card_info is not None:
             embed.description = f'{config.deny} У пользователя уже есть зарегистрированная карта `FW-{card_info["id"]}`.'
             await inter.edit_original_response(embed=embed)
             return
 
         owner = member
         banker = inter.author
-        timezone_offset = +3.0
-        tzinfo = timezone(timedelta(hours=timezone_offset))
-        date = datetime.datetime.now(tzinfo)
-        date = str(date).split('.')
-        date = date[0]
-        date_format = datetime.datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
-        timestamp = int(str(datetime.datetime.timestamp(date_format)).split('.')[0])
-        timestamp = f"<t:{timestamp}:f>"
 
         # insert new card in DB
         base.send(
-            f'''INSERT INTO `cards`(`id`, `owner_id`, `banker_id`) VALUES ('{card_id}','{owner.id}','{banker.id}')''')
+            f'''INSERT INTO `cards`(`id`, `owner_id`, `banker_id`) VALUES ('{card_id}','{owner.id}','{banker.id}')'''
+        )
 
+        # send log
+        timestamp = get_timestamp()
         logs_message = discord.Embed(
             description=f"### 💳 Пользователь {owner.mention} оформил карту `FW-{card_id}` \nКарту оформил банкир {banker.mention}. \nДата оформления: {timestamp}. \nКомментарий к операции: `{comment}`.",
             color=0x80D8ED)
         logs_message.set_footer(text=f'{main.copyright()}',
-                                icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
+            icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&'
+        )
         await webhook.send_log(logs_message)
 
-        responce_pm = discord.Embed(
+        # send pm response
+        response_pm = discord.Embed(
             description=f"### Вы успешно оформили карту `FW-{card_id}` \nКарту оформил банкир {banker.mention}. \nДата оформления: {timestamp}. \nКомментарий к операции: `{comment}`. \n\nЕсли вы не оформляли карту, немедленно сообщите об этом в <#1187849294942842900>.",
-            color=0x80D8ED)
-        responce_pm.set_footer(text=f'{main.copyright()}',
-                               icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
-        await owner.send(embed=responce_pm)
+            color=0x80D8ED
+        )
+        response_pm.set_footer(text=f'{main.copyright()}',
+           icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&'
+       )
+        await owner.send(embed=response_pm)
 
-        # gen and send responce message
+        # send response
         embed.description = f'{config.accept} Карта `FW-{card_id}` для пользователя {owner.mention} успешно оформлена.'
         await inter.edit_original_response(embed=embed)
 
-    @commands.slash_command(name="удалить-карту", description="💳 Удаляет указанную банковскую карту",
-                            guild_ids=[921483461016031263], test_guilds=[921483461016031263])
+    @commands.slash_command(name="удалить-карту",
+        description="💳 Удаляет указанную банковскую карту",
+        guild_ids=[921483461016031263],
+        test_guilds=[921483461016031263]
+    )
     @commands.has_role(1219227957973876736)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def delete_card(self, inter, card_id: str, comment: str):
@@ -106,7 +110,7 @@ class BankerCMD(commands.Cog):
         await inter.send(embed=embed, ephemeral=True)
 
         # card id validation
-        if (len(card_id) != 4):
+        if len(card_id) != 4:
             embed.description = f'{config.deny} Неправильный номер карты. Пример номера: `0001`.'
             await inter.edit_original_response(embed=embed)
             return
@@ -120,23 +124,19 @@ class BankerCMD(commands.Cog):
 
         # get member card info
         card_info = base.request_one(f"SELECT * FROM `cards` WHERE id = {card_id}")
-        if card_info == None:
+        if card_info is None:
             embed.description = f'{config.deny} Карта `FW-{card_id}` не найдена. Убедитесь, что вы ввели правильный номер.'
             await inter.edit_original_response(embed=embed)
             return
 
         owner = await self.client.fetch_user(card_info['owner_id'])
         banker = inter.author
-        timezone_offset = +3.0
-        tzinfo = timezone(timedelta(hours=timezone_offset))
-        date = str(datetime.datetime.now(tzinfo)).split('.')[0]
-        date_format = datetime.datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
-        timestamp = int(str(datetime.datetime.timestamp(date_format)).split('.')[0])
-        timestamp = f"<t:{timestamp}:f>"
 
         # insert new card in DB
         base.send(f"DELETE FROM `cards` WHERE id = {card_id}")
 
+        # send log
+        timestamp = get_timestamp()
         logs_message = discord.Embed(
             description=f"### 💳 Карта `FW-{card_id}` пользователя {owner.mention} удалена \nКарта удалена банкиром {banker.mention}. \n\nДата удаления: {timestamp}. \nКомментарий к операции: `{comment}`.",
             color=0x80D8ED)
@@ -144,19 +144,23 @@ class BankerCMD(commands.Cog):
                                 icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await webhook.send_log(logs_message)
 
-        responce_pm = discord.Embed(
+        # send pm response
+        response_pm = discord.Embed(
             description=f"### Ваша карта `FW-{card_id}` была удалена \nКарта удалена банкиром {banker.mention}. \nДата удаления: {timestamp}. \nКомментарий к операции: `{comment}`. \n\nЕсли карта была удалена не по вашему заявлению - обратитесь в <#1187849294942842900>.",
             color=0x80D8ED)
-        responce_pm.set_footer(text=f'{main.copyright()}',
+        response_pm.set_footer(text=f'{main.copyright()}',
                                icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
-        await owner.send(embed=responce_pm)
+        await owner.send(embed=response_pm)
 
-        # gen and send responce message
+        # send response
         embed.description = f'{config.accept} Карта `FW-{card_id}` пользователя {owner.mention} успешно удалена.'
         await inter.edit_original_response(embed=embed)
 
-    @commands.slash_command(name="снять-алмазы", description="💸 Снимает алмазы с указанной карты",
-                            guild_ids=[921483461016031263], test_guilds=[921483461016031263])
+    @commands.slash_command(name="снять-алмазы",
+        description="💸 Снимает алмазы с указанной карты",
+        guild_ids=[921483461016031263],
+        test_guilds=[921483461016031263]
+    )
     @commands.has_role(1219227957973876736)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def take_money(self, inter, card_id: str, sum: int, comment: str):
@@ -167,17 +171,17 @@ class BankerCMD(commands.Cog):
         await inter.send(embed=embed, ephemeral=True)
 
         # sum validation
-        if (sum < 0 or sum == 0):
+        if sum < 0 or sum == 0:
             embed.description = f'{config.deny} Введена некорректная сумма. Принимаются только положительные числа.'
             await inter.edit_original_response(embed=embed)
             return
-        if (sum > 5000):
+        if sum > 5000:
             embed.description = f'{config.deny} За раз можно снять не более 5000 алмазов.'
             await inter.edit_original_response(embed=embed)
             return
 
         # card id validation
-        if (len(card_id) != 4):
+        if len(card_id) != 4:
             embed.description = f'{config.deny} Неправильный номер карты. Пример номера: `0001`.'
             await inter.edit_original_response(embed=embed)
             return
@@ -191,19 +195,13 @@ class BankerCMD(commands.Cog):
 
         # get card info by card id
         card_info = base.request_one(f"SELECT * FROM `cards` WHERE id = {card_id}")
-        if card_info == None:
+        if card_info is None:
             embed.description = f'{config.deny} Карта `FW-{card_id}` не найдена. Убедитесь, что вы ввели правильный номер.'
             await inter.edit_original_response(embed=embed)
             return
 
         owner = await self.client.fetch_user(card_info['owner_id'])
         banker = inter.author
-        timezone_offset = +3.0
-        tzinfo = timezone(timedelta(hours=timezone_offset))
-        date = str(datetime.datetime.now(tzinfo)).split('.')[0]
-        date_format = datetime.datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
-        timestamp = int(str(datetime.datetime.timestamp(date_format)).split('.')[0])
-        timestamp = f"<t:{timestamp}:f>"
 
         # get balance and calc new
         balance = int(card_info['balance'])
@@ -216,6 +214,8 @@ class BankerCMD(commands.Cog):
         # update card balance in DB
         base.send(f"UPDATE `cards` SET `balance`= {new_balance} WHERE id = {card_id}")
 
+        # send log
+        timestamp = get_timestamp()
         logs_message = discord.Embed(
             description=f"### 💸 Пользователь {owner.mention} снял {sum} алмазов с карты `FW-{card_id}` \nБаланс: ~~{balance}~~ -> {new_balance} алмазов. \nТранзакция оформлена банкиром {banker.mention}. \nДата оформления транзакции: {timestamp}. \nКомментарий к операции: `{comment}`.",
             color=0x80d8ed)
@@ -223,19 +223,23 @@ class BankerCMD(commands.Cog):
                                 icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await webhook.send_log(logs_message)
 
-        responce_pm = discord.Embed(
+        # send pm response
+        response_pm = discord.Embed(
             description=f"### Вы сняли {sum} алмазов с карты `FW-{card_id}` \nБаланс: ~~{balance}~~ -> {new_balance} алмазов. \nТранзакция оформлена банкиром {banker.mention}. \nДата оформления транзакции: {timestamp}. \nКомментарий к операции: `{comment}`.",
             color=0x80d8ed)
-        responce_pm.set_footer(text=f'{main.copyright()}',
+        response_pm.set_footer(text=f'{main.copyright()}',
                                icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
-        await owner.send(embed=responce_pm)
+        await owner.send(embed=response_pm)
 
-        # gen and send responce
+        # send response
         embed.description = f'{config.accept} Вы сняли с карты пользователя {owner.mention} (`FW-{card_id}`) {sum} алмазов.'
         await inter.edit_original_response(embed=embed)
 
-    @commands.slash_command(name="пополнить-карту", description="💸 Пополняет карту пользователя",
-                            guild_ids=[921483461016031263], test_guilds=[921483461016031263])
+    @commands.slash_command(name="пополнить-карту",
+        description="💸 Пополняет карту пользователя",
+        guild_ids=[921483461016031263],
+        test_guilds=[921483461016031263]
+    )
     @commands.has_role(1219227957973876736)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def grant_money(self, inter, card_id: str, sum: int, comment: str):
@@ -246,17 +250,17 @@ class BankerCMD(commands.Cog):
         await inter.send(embed=embed, ephemeral=True)
 
         # sum validation
-        if (sum < 0 or sum == 0):
+        if sum < 0 or sum == 0:
             embed.description = f'{config.deny} Введена некорректная сумма. Принимаются только положительные числа.'
             await inter.edit_original_response(embed=embed)
             return
-        if (sum > 5000):
+        if sum > 5000:
             embed.description = f'{config.deny} За раз можно пополнить не более 5000 алмазов.'
             await inter.edit_original_response(embed=embed)
             return
 
         # card id validation
-        if (len(card_id) != 4):
+        if len(card_id) != 4:
             embed.description = f'{config.deny} Неправильный номер карты. Пример номера: `0001`.'
             await inter.edit_original_response(embed=embed)
             return
@@ -270,7 +274,7 @@ class BankerCMD(commands.Cog):
 
         # gen card info by card id
         card_info = base.request_one(f"SELECT * FROM `cards` WHERE id = {card_id}")
-        if card_info == None:
+        if card_info is None:
             embed.description = f'{config.deny} Карта `FW-{card_id}` не найдена. Убедитесь, что вы ввели правильный номер.'
             await inter.edit_original_response(embed=embed)
             return
@@ -278,12 +282,6 @@ class BankerCMD(commands.Cog):
         owner_id = card_info['owner_id']
         owner = await self.client.fetch_user(owner_id)
         banker = inter.author
-        timezone_offset = +3.0
-        tzinfo = timezone(timedelta(hours=timezone_offset))
-        date = str(datetime.datetime.now(tzinfo)).split('.')[0]
-        date_format = datetime.datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
-        timestamp = int(str(datetime.datetime.timestamp(date_format)).split('.')[0])
-        timestamp = f"<t:{timestamp}:f>"
 
         # get balance and calc new
         balance = int(card_info['balance'])
@@ -292,6 +290,8 @@ class BankerCMD(commands.Cog):
         # update card balance in DB
         base.send(f"UPDATE `cards` SET `balance` = {new_balance} WHERE id = {card_id}")
 
+        # send log
+        timestamp = get_timestamp()
         logs_message = discord.Embed(
             description=f"### 💸 Пользователь {owner.mention} пополнил карту `FW-{card_id}` на {sum} алмазов \nБаланс: ~~{balance}~~ -> {new_balance} алмазов. \nТранзакция оформлена банкиром {banker.mention}. \nДата оформления транзакции: {timestamp}. \nКомментарий к операции: `{comment}`.",
             color=0x80d8ed)
@@ -299,17 +299,17 @@ class BankerCMD(commands.Cog):
                                 icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
         await webhook.send_log(logs_message)
 
-        responce_pm = discord.Embed(
+        # send pm response
+        response_pm = discord.Embed(
             description=f"### Вы пополнили карту `FW-{card_id}` на {sum} алмазов \nБаланс: ~~{balance}~~ -> {new_balance} алмазов. \nТранзакция оформлена банкиром {banker.mention}. \nДата оформления транзакции: {timestamp}. \nКомментарий к операции: `{comment}`.",
             color=0x80d8ed)
-        responce_pm.set_footer(text=f'{main.copyright()}',
+        response_pm.set_footer(text=f'{main.copyright()}',
                                icon_url=f'https://cdn.discordapp.com/attachments/1053188377651970098/1238899111948976189/9.png?ex=6640f635&is=663fa4b5&hm=541eea40573fd92a3861ed259706dff887d9934650b5aab7f698c0e9842cf9bd&')
-        await owner.send(embed=responce_pm)
+        await owner.send(embed=response_pm)
 
-        # gen and send responce
+        # send response
         embed.description = f'{config.accept} Вы пополнили карту пользователя {owner.mention} (`FW-{card_id}`) на {sum} алмазов.'
         await inter.edit_original_response(embed=embed)
-
 
 def setup(client):
     client.add_cog(BankerCMD(client))
