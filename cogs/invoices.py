@@ -12,7 +12,10 @@ class Invoices(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         await self.client.change_presence(
-            activity=discord.Activity(type=discord.ActivityType.watching, name=f"за штрафами"))
+            activity=discord.Activity(
+                type=discord.ActivityType.watching, name=f"за штрафами"
+            )
+        )
         self.invoices_check.start()
 
     @tasks.loop(minutes=5)
@@ -22,10 +25,11 @@ class Invoices(commands.Cog):
             status = invoice['status']
             curr_date = datetime.datetime.now()
             due_date = invoice['due_date']
-            if (curr_date > due_date):
-                if (status == 'Не оплачен'):
+
+            if curr_date > due_date:
+                if status == 'Не оплачен':
                     await Invoices.notify(self, due_date, invoice)
-                elif (status == 'Просрочен'):
+                elif status == 'Просрочен':
                     await Invoices.twice_notify(self, due_date, invoice)
 
     async def notify(self, date, invoice):
@@ -57,19 +61,22 @@ class Invoices(commands.Cog):
             msg_embed.description = f"~~{msg_embed.description}~~ \n\n**Штраф просрочен. \nШтраф должен быть оплачен до {new_date}**"
             await webhook.edit_notify(message_id=msg_id, message=msg_embed)
 
-        # gen msg and send
+        # send log
         logs_message = discord.Embed(
             description=f"### Счёт `{invoice_id}` игрока {invoice_user.mention} просрочен \nТип счёта: `{type}` \nСумма счёта: `{amount}` алмазов \nСчёт выставил {invoice_author.mention} \n\nСчёт должен был быть оплачен до ~~`{date}`~~ -> `{new_date}`.",
             color=0x80d8ed)
         logs_message.set_footer(text=f'{main.copyright()} | ID: {invoice_id}',
-                                icon_url=f'https://cdn.discordapp.com/emojis/1105878293187678208.webp?size=96&quality=lossless')
+            icon_url=f'https://cdn.discordapp.com/emojis/1105878293187678208.webp?size=96&quality=lossless'
+        )
         await webhook.send_log(logs_message)
 
+        # send pm response
         responce_pm = discord.Embed(
             description=f"### Выставленный вам счёт `{invoice_id}` просрочен \nТип счёта: `{type}` \nСумма счёта: `{amount}` алмазов \nСчёт выставил {invoice_author.mention} \n\nСчёт должен был быть оплачен до ~~`{date}`~~ -> `{new_date}`.",
             color=0x80d8ed)
         responce_pm.set_footer(text=f'{main.copyright()} | ID: {invoice_id}',
-                               icon_url=f'https://cdn.discordapp.com/emojis/1105878293187678208.webp?size=96&quality=lossless')
+           icon_url=f'https://cdn.discordapp.com/emojis/1105878293187678208.webp?size=96&quality=lossless'
+        )
         await invoice_user.send(embed=responce_pm)
 
     async def twice_notify(self, date, invoice):
@@ -97,7 +104,7 @@ class Invoices(commands.Cog):
             msg_embed.description = f"{msg_embed.description} \n**Штраф повторно просрочен.**"
             await webhook.edit_notify(message_id=msg_id, message=msg_embed)
 
-        # gen msg and send
+        # send log
         logs_message = discord.Embed(
             description=f"### Счёт `{invoice_id}` игрока {invoice_user.mention} повторно просрочен \nТип счёта: `{type}` \nСумма счёта: `{amount}` алмазов \nСчёт оформил {invoice_author.mention} \n\nСчёт должен был быть оплачен до `{date}`",
             color=0x80d8ed)
@@ -105,6 +112,7 @@ class Invoices(commands.Cog):
                                 icon_url=f'https://cdn.discordapp.com/emojis/1105878293187678208.webp?size=96&quality=lossless')
         await webhook.send_log(logs_message)
 
+        # send pm response
         responce_pm = discord.Embed(
             description=f"### Ваш счёт `{invoice_id}` повторно просрочен \nТип счёта: `{type}` \nСумма счёта: `{amount}` алмазов \nСчёт оформил {invoice_author.mention} \n\nСчёт должен был быть оплачен до `{date}`",
             color=0x80d8ed)

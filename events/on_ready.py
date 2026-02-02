@@ -1,7 +1,6 @@
 import disnake as discord
 from disnake.ext import commands
 
-
 class OnReady(commands.Cog):
     def __init__(self, client):
         self.client = client
